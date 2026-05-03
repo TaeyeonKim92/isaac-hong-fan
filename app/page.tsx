@@ -191,7 +191,7 @@ export default async function Home() {
           <section id="albums" className="py-20 border-t" style={{ borderColor: 'var(--border)' }}>
             <h2 className="section-title">앨범</h2>
             <div className="section-line" />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-5">
               {albums.map((album) => (
                 <a
                   key={album.id}

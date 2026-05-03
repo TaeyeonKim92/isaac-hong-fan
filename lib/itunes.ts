@@ -8,7 +8,7 @@ export interface ItunesAlbum {
   url: string
 }
 
-export async function getAlbums(artist = '홍이삭', limit = 8): Promise<ItunesAlbum[]> {
+export async function getAlbums(artist = '홍이삭', limit = 50): Promise<ItunesAlbum[]> {
   try {
     const q = encodeURIComponent(artist)
     const res = await fetch(
@@ -19,7 +19,6 @@ export async function getAlbums(artist = '홍이삭', limit = 8): Promise<Itunes
 
     return results
       .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime())
-      .slice(0, 6)
       .map((r) => ({
         id: r.collectionId,
         name: r.collectionName,
