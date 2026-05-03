@@ -40,7 +40,9 @@ export async function getNewsArticles(query = '홍이삭', maxResults = 6): Prom
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RSS reader)' },
     })
     const xml = await res.text()
-    return parseXml(xml).slice(0, maxResults)
+    return parseXml(xml)
+      .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
+      .slice(0, maxResults)
   } catch {
     return []
   }
