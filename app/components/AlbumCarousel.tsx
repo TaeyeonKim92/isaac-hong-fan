@@ -38,19 +38,18 @@ export default function AlbumCarousel({ albums }: { albums: ItunesAlbum[] }) {
             className="group"
           >
             <div
-              className="rounded-xl mb-2 overflow-hidden group-hover:scale-105 transition-transform duration-500"
-              style={{ aspectRatio: '1', background: 'var(--border)' }}
+              className="aspect-square relative overflow-hidden rounded-xl mb-2"
+              style={{ background: 'var(--border)' }}
             >
               {album.artworkUrl ? (
                 <Image
                   src={album.artworkUrl}
                   alt={album.name}
-                  width={400}
-                  height={400}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>🎵</div>
+                <div className="absolute inset-0 flex items-center justify-center text-4xl">🎵</div>
               )}
             </div>
             <p className="font-semibold text-sm truncate" style={{ color: 'var(--text)' }}>
