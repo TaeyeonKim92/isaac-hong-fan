@@ -11,11 +11,11 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
-  title: '홍이삭 (Isaac Hong)',
-  description: '홍이삭의 음악, 영상, 최신 소식을 한 곳에서',
+  title: 'Singer-Songwriter Isaac Hong Fan Page',
+  description: 'An unofficial fan page for Isaac Hong (홍이삭). This is not an official page.',
   openGraph: {
-    title: '홍이삭 (Isaac Hong)',
-    description: '홍이삭의 음악, 영상, 최신 소식을 한 곳에서',
+    title: 'Singer-Songwriter Isaac Hong Fan Page',
+    description: 'An unofficial fan page for Isaac Hong (홍이삭). This is not an official page.',
     type: 'website',
   },
 }
