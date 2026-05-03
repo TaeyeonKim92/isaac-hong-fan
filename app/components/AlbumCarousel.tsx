@@ -44,7 +44,8 @@ export default function AlbumCarousel({ albums }: { albums: ItunesAlbum[] }) {
                   alt={album.name}
                   width={400}
                   height={400}
-                  className="w-full h-auto block group-hover:scale-105 transition-transform duration-500"
+                  className="w-full block group-hover:scale-105 transition-transform duration-500"
+                  style={{ aspectRatio: '1 / 1', objectFit: 'cover', height: 'auto' }}
                 />
               ) : (
                 <div className="w-full aspect-square flex items-center justify-center text-4xl">🎵</div>
