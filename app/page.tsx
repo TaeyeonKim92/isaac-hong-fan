@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import Image from 'next/image'
+import AlbumCarousel from './components/AlbumCarousel'
 import { getArtistInfo, getTopTracks } from '@/lib/lastfm'
 import { getAlbums } from '@/lib/itunes'
 import { getLatestVideos, getChannelInfo, formatDate } from '@/lib/youtube'
@@ -191,40 +192,7 @@ export default async function Home() {
           <section id="albums" className="py-20 border-t" style={{ borderColor: 'var(--border)' }}>
             <h2 className="section-title">앨범</h2>
             <div className="section-line" />
-            <div className="scroll-x flex gap-4 -mx-6 px-6 md:-mx-10 md:px-10 pb-4">
-              {albums.slice(0, 8).map((album) => (
-                <a
-                  key={album.id}
-                  href={album.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group shrink-0"
-                  style={{ width: '160px', scrollSnapAlign: 'start' }}
-                >
-                  <div
-                    className="relative overflow-hidden rounded-xl mb-3"
-                    style={{ width: '160px', height: '160px', background: 'var(--border)' }}
-                  >
-                    {album.artworkUrl ? (
-                      <Image
-                        src={album.artworkUrl}
-                        alt={album.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-4xl">🎵</div>
-                    )}
-                  </div>
-                  <p className="font-semibold text-sm truncate" style={{ color: 'var(--text)' }}>
-                    {album.name}
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
-                    {album.releaseDate}
-                  </p>
-                </a>
-              ))}
-            </div>
+            <AlbumCarousel albums={albums} />
           </section>
         )}
 
