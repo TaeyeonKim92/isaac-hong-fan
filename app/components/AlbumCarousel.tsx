@@ -38,8 +38,8 @@ export default function AlbumCarousel({ albums }: { albums: ItunesAlbum[] }) {
             className="group"
           >
             <div
-              className="relative overflow-hidden rounded-xl mb-2"
-              style={{ aspectRatio: '1', background: 'var(--border)' }}
+              className="w-full aspect-square relative overflow-hidden rounded-xl mb-2"
+              style={{ background: 'var(--border)' }}
             >
               {album.artworkUrl ? (
                 <Image
