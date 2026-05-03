@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --bg: #fafaf8;
-  --card: #ffffff;
-  --border: #e8e4df;
-  --text: #1a1814;
-  --muted: #6b6560;
-  --accent: #8b5e3c;
+  --bg: #f7f2ea;
+  --card: #fffdf7;
+  --border: #e5d9c8;
+  --text: #261a0e;
+  --muted: #8a7060;
+  --accent: #9b4f2a;
 }
 
 body {
@@ -18,12 +18,25 @@ body {
 
 @layer components {
   .card {
-    @apply bg-white rounded-2xl border border-stone-200 overflow-hidden;
+    background: var(--card);
+    border: 1px solid var(--border);
+    @apply rounded-2xl overflow-hidden;
   }
+
   .badge {
-    @apply text-xs font-medium px-2 py-0.5 rounded-full bg-stone-100 text-stone-600;
+    @apply text-xs font-medium px-2.5 py-0.5 rounded-full;
+    background: rgba(155, 79, 42, 0.1);
+    color: var(--accent);
   }
+
   .section-title {
-    @apply text-2xl font-serif font-semibold text-stone-800 mb-6;
+    @apply text-2xl font-semibold mb-2;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .section-line {
+    @apply w-10 h-0.5 mb-10;
+    background: var(--accent);
   }
 }
