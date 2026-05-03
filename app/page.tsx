@@ -191,18 +191,19 @@ export default async function Home() {
           <section id="albums" className="py-20 border-t" style={{ borderColor: 'var(--border)' }}>
             <h2 className="section-title">앨범</h2>
             <div className="section-line" />
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-5">
-              {albums.map((album) => (
+            <div className="scroll-x flex gap-4 -mx-6 px-6 md:-mx-10 md:px-10 pb-4">
+              {albums.slice(0, 8).map((album) => (
                 <a
                   key={album.id}
                   href={album.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group"
+                  className="group shrink-0"
+                  style={{ width: '160px', scrollSnapAlign: 'start' }}
                 >
                   <div
-                    className="aspect-square relative overflow-hidden rounded-xl mb-3"
-                    style={{ background: 'var(--border)' }}
+                    className="relative overflow-hidden rounded-xl mb-3"
+                    style={{ width: '160px', height: '160px', background: 'var(--border)' }}
                   >
                     {album.artworkUrl ? (
                       <Image

@@ -39,4 +39,13 @@ body {
     @apply w-10 h-0.5 mb-10;
     background: var(--accent);
   }
+
+  .scroll-x {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .scroll-x::-webkit-scrollbar {
+    display: none;
+  }
 }
