@@ -1,6 +1,30 @@
 const API_KEY = process.env.YOUTUBE_API_KEY!
 const CHANNEL_ID = 'UCsnX5bnTB6NTzzXOguVcqZw'
 
+export interface YouTubeChannel {
+  title: string
+  thumbnailUrl: string
+  subscriberCount: string
+}
+
+export async function getChannelInfo(): Promise<YouTubeChannel | null> {
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/channels?id=${CHANNEL_ID}&part=snippet,statistics&key=${API_KEY}`
+    )
+    const data = await res.json()
+    const ch = data.items?.[0]
+    if (!ch) return null
+    return {
+      title: ch.snippet.title,
+      thumbnailUrl: ch.snippet.thumbnails.high?.url ?? ch.snippet.thumbnails.default?.url ?? '',
+      subscriberCount: Number(ch.statistics.subscriberCount).toLocaleString('ko-KR'),
+    }
+  } catch {
+    return null
+  }
+}
+
 export interface YouTubeVideo {
   id: string
   title: string

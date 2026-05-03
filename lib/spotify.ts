@@ -4,11 +4,8 @@ const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET!
 async function getAccessToken(): Promise<string> {
   const res = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
-    headers: {
-      Authorization: 'Basic ' + Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64'),
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: 'grant_type=client_credentials',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=client_credentials&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}`,
     cache: 'no-store',
   })
   const data = await res.json()
@@ -48,11 +45,16 @@ export interface SpotifyAlbum {
 export async function getSpotifyArtist(): Promise<SpotifyArtist | null> {
   try {
     const token = await getAccessToken()
+    const q = encodeURIComponent('홍이삭 Isaac Hong')
     const res = await fetch(
-      'https://api.spotify.com/v1/search?q=홍이삭 Isaac Hong&type=artist&limit=1&market=KR',
+      `https://api.spotify.com/v1/search?q=${q}&type=artist&limit=1&market=KR`,
       { headers: { Authorization: `Bearer ${token}` } }
     )
     const data = await res.json()
+    if (!res.ok) {
+      console.error('Spotify search error:', data)
+      return null
+    }
     const artist = data.artists?.items?.[0]
     if (!artist) return null
 
