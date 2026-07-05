@@ -88,18 +88,12 @@ export default async function Home() {
             Singer &middot; Songwriter
           </p>
 
-          <h1
-            className="font-bold italic leading-[0.9] mb-5"
-            style={{
-              fontFamily: 'var(--font-playfair), serif',
-              fontSize: 'clamp(4rem, 16vw, 14rem)',
-              color: 'var(--text)',
-              letterSpacing: '-0.02em',
-              textShadow: '4px 4px 0 rgba(155,79,42,0.12)',
-            }}
-          >
-            Isaac Hong
-          </h1>
+          <h1 className="sr-only">Isaac Hong</h1>
+          <img
+            src="/images/logo/isaac-hong-logo.png"
+            alt=""
+            className="mx-auto mb-8 w-[min(78vw,48rem)] mix-blend-multiply opacity-95"
+          />
 
           <p
             className="text-lg md:text-xl mb-12"
