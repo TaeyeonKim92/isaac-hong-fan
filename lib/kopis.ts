@@ -84,6 +84,22 @@ function buildBookingSearchUrl(bookingName: string, title: string): string {
   return ''
 }
 
+function isUsableBookingUrl(url: string): boolean {
+  if (!url) return false
+
+  try {
+    const parsed = new URL(url)
+    const href = parsed.href.toLowerCase()
+
+    if (href.includes('notice_ticket.html')) return false
+    if (parsed.hostname === 'tkfile.yes24.com') return false
+
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:'
+  } catch {
+    return false
+  }
+}
+
 async function getBookingInfo(id: string, title: string): Promise<{ bookingName: string; bookingUrl: string }> {
   try {
     const res = await fetch(`${BASE}/pblprfr/${id}?service=${API_KEY}`)
@@ -92,10 +108,17 @@ async function getBookingInfo(id: string, title: string): Promise<{ bookingName:
 
     for (const relate of relates) {
       const bookingName = extractXmlValue(relate, 'relatenm')
+      const searchUrl = buildBookingSearchUrl(bookingName, title)
+      if (bookingName && searchUrl) {
+        return { bookingName, bookingUrl: searchUrl }
+      }
+    }
+
+    for (const relate of relates) {
+      const bookingName = extractXmlValue(relate, 'relatenm')
       const relateUrl = extractXmlValue(relate, 'relateurl')
-      const bookingUrl = buildBookingSearchUrl(bookingName, title) || relateUrl
-      if (bookingName && bookingUrl) {
-        return { bookingName, bookingUrl }
+      if (bookingName && isUsableBookingUrl(relateUrl)) {
+        return { bookingName, bookingUrl: relateUrl }
       }
     }
   } catch {
