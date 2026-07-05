@@ -3,7 +3,7 @@ import path from 'path'
 import Image from 'next/image'
 import AlbumCarousel from './components/AlbumCarousel'
 import { getArtistInfo, getTopTracks } from '@/lib/lastfm'
-import { getAlbums } from '@/lib/itunes'
+import { getAlbums, getLatestOriginalAlbumTracks } from '@/lib/itunes'
 import { getInstagramPosts, formatInstagramDate } from '@/lib/instagram'
 import { getLatestVideos, formatDate } from '@/lib/youtube'
 import { getNewsArticles, formatNewsDate } from '@/lib/news'
@@ -23,10 +23,11 @@ function readImages(folder: string): string[] {
 }
 
 export default async function Home() {
-  const [artist, tracks, albums, instagramPosts, videos, news, performances] = await Promise.all([
+  const [artist, tracks, albums, latestTracks, instagramPosts, videos, news, performances] = await Promise.all([
     getArtistInfo(),
     getTopTracks(),
     getAlbums('홍이삭'),
+    getLatestOriginalAlbumTracks('홍이삭'),
     getInstagramPosts(3),
     getLatestVideos(6),
     getNewsArticles('홍이삭', 6),
@@ -210,34 +211,73 @@ export default async function Home() {
           </section>
         )}
 
-        {/* 인기 트랙 */}
-        {tracks.length > 0 && (
+        {/* 트랙 */}
+        {(tracks.length > 0 || latestTracks.length > 0) && (
           <section className="py-20 border-t" style={{ borderColor: 'var(--border)' }}>
-            <h2 className="section-title">인기 트랙</h2>
-            <div className="section-line" />
-            {tracks.map((track, i) => (
-              <a
-                key={track.name}
-                href={track.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-6 py-4 border-b group"
-                style={{ borderColor: 'var(--border)' }}
-              >
-                <span className="text-xs w-4 text-center shrink-0 tabular-nums" style={{ color: 'var(--muted)' }}>
-                  {i + 1}
-                </span>
-                <p
-                  className="flex-1 font-medium group-hover:opacity-60 transition-opacity"
-                  style={{ color: 'var(--text)' }}
-                >
-                  {track.name}
-                </p>
-                <span className="text-sm shrink-0" style={{ color: 'var(--muted)' }}>
-                  {track.playcount}
-                </span>
-              </a>
-            ))}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-14">
+              {tracks.length > 0 && (
+                <div>
+                  <h2 className="section-title">인기 트랙</h2>
+                  <div className="section-line" />
+                  {tracks.map((track, i) => (
+                    <a
+                      key={track.name}
+                      href={track.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-6 py-4 border-b group"
+                      style={{ borderColor: 'var(--border)' }}
+                    >
+                      <span className="text-xs w-4 text-center shrink-0 tabular-nums" style={{ color: 'var(--muted)' }}>
+                        {i + 1}
+                      </span>
+                      <p
+                        className="flex-1 font-medium group-hover:opacity-60 transition-opacity"
+                        style={{ color: 'var(--text)' }}
+                      >
+                        {track.name}
+                      </p>
+                      <span className="text-sm shrink-0" style={{ color: 'var(--muted)' }}>
+                        {track.playcount}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              {latestTracks.length > 0 && (
+                <div>
+                  <h2 className="section-title">최신 트랙</h2>
+                  <div className="section-line" />
+                  <p className="text-sm mb-3" style={{ color: 'var(--muted)' }}>
+                    {latestTracks[0].albumName}
+                  </p>
+                  {latestTracks.map((track, i) => (
+                    <a
+                      key={track.id}
+                      href={track.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-6 py-4 border-b group"
+                      style={{ borderColor: 'var(--border)' }}
+                    >
+                      <span className="text-xs w-4 text-center shrink-0 tabular-nums" style={{ color: 'var(--muted)' }}>
+                        {track.trackNumber || i + 1}
+                      </span>
+                      <p
+                        className="flex-1 font-medium group-hover:opacity-60 transition-opacity"
+                        style={{ color: 'var(--text)' }}
+                      >
+                        {track.name}
+                      </p>
+                      <span className="text-sm shrink-0" style={{ color: 'var(--muted)' }}>
+                        {track.releaseDate.slice(0, 4)}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
         )}
       </div>
