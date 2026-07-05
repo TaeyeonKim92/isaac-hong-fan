@@ -123,6 +123,24 @@ export default async function Home() {
             >
               Videos
             </a>
+            <a
+              href="https://open.spotify.com/search/%ED%99%8D%EC%9D%B4%EC%82%AD/artists"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase border transition-all hover:opacity-70"
+              style={{ borderColor: 'var(--text)', color: 'var(--text)' }}
+            >
+              Spotify
+            </a>
+            <a
+              href="https://www.melon.com/search/total/index.htm?q=%ED%99%8D%EC%9D%B4%EC%82%AD"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase border transition-all hover:opacity-70"
+              style={{ borderColor: 'var(--text)', color: 'var(--text)' }}
+            >
+              Melon
+            </a>
             {artist?.url && (
               <a
                 href={artist.url}
