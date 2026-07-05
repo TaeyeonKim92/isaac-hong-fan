@@ -23,7 +23,7 @@ export default function Nav() {
       <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between relative">
         <div className="hidden md:flex gap-10">
           <a href="#albums" className={linkClass}>Albums</a>
-          <a href="#gallery" className={linkClass}>Gallery</a>
+          <a href="#videos" className={linkClass}>Gallery</a>
         </div>
 
         <a
