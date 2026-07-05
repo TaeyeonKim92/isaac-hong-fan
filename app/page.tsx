@@ -4,7 +4,7 @@ import Image from 'next/image'
 import AlbumCarousel from './components/AlbumCarousel'
 import { getArtistInfo, getTopTracks } from '@/lib/lastfm'
 import { getAlbums } from '@/lib/itunes'
-import { getLatestVideos, getChannelInfo, formatDate } from '@/lib/youtube'
+import { getLatestVideos, formatDate } from '@/lib/youtube'
 import { getNewsArticles, formatNewsDate } from '@/lib/news'
 import { getUpcomingPerformances } from '@/lib/kopis'
 
@@ -22,11 +22,10 @@ function readImages(folder: string): string[] {
 }
 
 export default async function Home() {
-  const [artist, tracks, albums, channel, videos, news, performances] = await Promise.all([
+  const [artist, tracks, albums, videos, news, performances] = await Promise.all([
     getArtistInfo(),
     getTopTracks(),
     getAlbums('홍이삭'),
-    getChannelInfo(),
     getLatestVideos(6),
     getNewsArticles('홍이삭', 6),
     getUpcomingPerformances('홍이삭'),
@@ -103,20 +102,6 @@ export default async function Home() {
           >
             홍이삭
           </p>
-
-          {/* 통계 */}
-          <div
-            className="flex gap-6 items-center justify-center text-sm mb-10 flex-wrap"
-            style={{ color: 'var(--muted)' }}
-          >
-            {channel?.subscriberCount && <span>YouTube {channel.subscriberCount}</span>}
-            {artist?.listeners && (
-              <>
-                <span style={{ color: 'var(--border)' }}>·</span>
-                <span>Last.fm {artist.listeners} 리스너</span>
-              </>
-            )}
-          </div>
 
           {/* 링크 버튼 */}
           <div className="flex gap-4 justify-center flex-wrap">
