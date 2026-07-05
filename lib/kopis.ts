@@ -69,6 +69,10 @@ function getBookingSearchQuery(title: string): string {
 function buildBookingSearchUrl(bookingName: string, title: string): string {
   const query = getBookingSearchQuery(title)
 
+  if (/the player season 3/i.test(title)) {
+    return `https://www.ticketlink.co.kr/search?query=${encodeSearchQuery(query)}`
+  }
+
   if (/티켓링크|ticketlink/i.test(bookingName)) {
     return `https://www.ticketlink.co.kr/search?query=${encodeSearchQuery(query)}`
   }
