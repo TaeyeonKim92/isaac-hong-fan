@@ -32,9 +32,9 @@ export default function Nav() {
           className="absolute left-1/2 -translate-x-1/2 transition-opacity hover:opacity-70"
         >
           <img
-            src="/images/logo/isaac-hong-logo.png"
+            src="/images/logo/isaac-hong-logo-dark.png"
             alt="Isaac Hong"
-            className="h-6 w-auto opacity-90"
+            className="h-6 w-auto"
           />
         </a>
 
