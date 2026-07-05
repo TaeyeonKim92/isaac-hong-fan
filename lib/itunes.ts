@@ -38,6 +38,17 @@ function isOriginalAlbum(album: ItunesAlbum): boolean {
   return album.artistName === '홍이삭' && !ostMarkers.some((marker) => text.includes(marker))
 }
 
+function isIsaacHongAlbum(album: ItunesAlbum): boolean {
+  const excludedNames = [
+    'good night - single',
+    'nostalgia - single',
+    'let go - single',
+  ]
+
+  return album.artistName === '홍이삭'
+    && !excludedNames.includes(album.name.toLowerCase())
+}
+
 export async function getAlbums(artist = '홍이삭', limit = 50): Promise<ItunesAlbum[]> {
   try {
     const q = encodeURIComponent(artist)
@@ -48,7 +59,6 @@ export async function getAlbums(artist = '홍이삭', limit = 50): Promise<Itune
     const results = (data.results ?? []) as any[]
 
     return results
-      .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime())
       .map((r) => ({
         id: r.collectionId,
         name: r.collectionName,
@@ -58,6 +68,8 @@ export async function getAlbums(artist = '홍이삭', limit = 50): Promise<Itune
         artworkUrl: (r.artworkUrl100 ?? '').replace('100x100', '400x400'),
         url: r.collectionViewUrl ?? '',
       }))
+      .filter(isIsaacHongAlbum)
+      .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime())
   } catch {
     return []
   }

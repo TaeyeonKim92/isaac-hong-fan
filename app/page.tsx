@@ -2,10 +2,11 @@ import fs from 'fs'
 import path from 'path'
 import Image from 'next/image'
 import AlbumCarousel from './components/AlbumCarousel'
+import VideoCarousel from './components/VideoCarousel'
 import { getArtistInfo, getTopTracks } from '@/lib/lastfm'
 import { getAlbums, getLatestOriginalAlbumTracks } from '@/lib/itunes'
 import { getInstagramPosts, formatInstagramDate } from '@/lib/instagram'
-import { getLatestVideos, formatDate } from '@/lib/youtube'
+import { getLatestVideos } from '@/lib/youtube'
 import { getNewsArticles, formatNewsDate } from '@/lib/news'
 import { getUpcomingPerformances } from '@/lib/kopis'
 
@@ -29,7 +30,7 @@ export default async function Home() {
     getAlbums('홍이삭'),
     getLatestOriginalAlbumTracks('홍이삭'),
     getInstagramPosts(3),
-    getLatestVideos(6),
+    getLatestVideos(50),
     getNewsArticles('홍이삭', 6),
     getUpcomingPerformances('홍이삭'),
   ])
@@ -382,46 +383,7 @@ export default async function Home() {
           <div className="max-w-6xl mx-auto px-6 md:px-10">
             <h2 className="section-title">최신 영상</h2>
             <div className="section-line" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {videos.map((video) => (
-                <a
-                  key={video.id}
-                  href={video.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group"
-                >
-                  <div
-                    className="aspect-video relative overflow-hidden rounded-xl mb-3"
-                    style={{ background: 'var(--border)' }}
-                  >
-                    <Image
-                      src={video.thumbnailUrl}
-                      alt={video.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div
-                      className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ background: 'rgba(0,0,0,0.22)' }}
-                    >
-                      <div
-                        className="w-12 h-12 rounded-full flex items-center justify-center"
-                        style={{ background: 'rgba(255,255,255,0.9)' }}
-                      >
-                        <div className="w-0 h-0 border-y-[8px] border-y-transparent border-l-[14px] border-l-stone-800 ml-1" />
-                      </div>
-                    </div>
-                  </div>
-                  <p className="font-medium text-sm line-clamp-2 mb-1" style={{ color: 'var(--text)' }}>
-                    {video.title}
-                  </p>
-                  <p className="text-xs" style={{ color: 'var(--muted)' }}>
-                    {video.channelTitle} &middot; {formatDate(video.publishedAt)} &middot; {video.viewCount}회
-                  </p>
-                </a>
-              ))}
-            </div>
+            <VideoCarousel videos={videos} />
           </div>
         </section>
       )}
