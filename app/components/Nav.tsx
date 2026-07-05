@@ -22,16 +22,20 @@ export default function Nav() {
     >
       <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between relative">
         <div className="hidden md:flex gap-10">
+          <a href="#history" className={linkClass}>History</a>
           <a href="#albums" className={linkClass}>Albums</a>
           <a href="#videos" className={linkClass}>Gallery</a>
         </div>
 
         <a
           href="#"
-          className="absolute left-1/2 -translate-x-1/2 md:static md:transform-none font-bold italic text-xl text-[#261a0e]"
-          style={{ fontFamily: 'var(--font-playfair), serif' }}
+          className="absolute left-1/2 -translate-x-1/2 transition-opacity hover:opacity-70"
         >
-          Isaac Hong
+          <img
+            src="/images/logo/isaac-hong-logo.png"
+            alt="Isaac Hong"
+            className="h-7 w-auto mix-blend-multiply opacity-90"
+          />
         </a>
 
         <div className="hidden md:flex gap-10">

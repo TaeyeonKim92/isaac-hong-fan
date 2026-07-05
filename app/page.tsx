@@ -9,6 +9,7 @@ import { getInstagramPosts, formatInstagramDate } from '@/lib/instagram'
 import { getLatestVideos } from '@/lib/youtube'
 import { getNewsArticles, formatNewsDate } from '@/lib/news'
 import { getUpcomingPerformances } from '@/lib/kopis'
+import { historyItems } from '@/lib/history'
 
 export const revalidate = 86400
 
@@ -202,6 +203,54 @@ export default async function Home() {
             </div>
           </section>
         )}
+
+        {/* 히스토리 */}
+        <section id="history" className="py-20 border-t" style={{ borderColor: 'var(--border)' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-12">
+            <div>
+              <p className="text-[11px] tracking-[0.35em] uppercase mb-3" style={{ color: 'var(--muted)' }}>
+                History
+              </p>
+              <h2
+                className="font-bold italic mb-5"
+                style={{
+                  fontFamily: 'var(--font-playfair), serif',
+                  fontSize: '2.5rem',
+                  color: 'var(--text)',
+                }}
+              >
+                A quiet arc
+              </h2>
+              <p className="leading-relaxed" style={{ color: 'var(--muted)', maxWidth: '28rem' }}>
+                무대와 음반 사이에서 쌓아 온 시간들을 짧은 연표로 정리했습니다.
+              </p>
+            </div>
+            <div>
+              {historyItems.map((item) => (
+                <div
+                  key={`${item.year}-${item.title}`}
+                  className="grid grid-cols-[4.5rem_1fr] gap-5 py-5 border-b"
+                  style={{ borderColor: 'var(--border)' }}
+                >
+                  <p
+                    className="text-sm font-semibold tabular-nums"
+                    style={{ color: 'var(--accent)', fontFamily: 'var(--font-playfair), serif' }}
+                  >
+                    {item.year}
+                  </p>
+                  <div>
+                    <h3 className="font-semibold mb-1" style={{ color: 'var(--text)' }}>
+                      {item.title}
+                    </h3>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* 앨범 */}
         {albums.length > 0 && (
@@ -482,12 +531,11 @@ export default async function Home() {
 
       {/* ── Footer ───────────────────────────────────────────────── */}
       <footer className="py-14 text-center border-t" style={{ borderColor: 'var(--border)' }}>
-        <p
-          className="font-bold italic text-xl"
-          style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--text)' }}
-        >
-          Isaac Hong
-        </p>
+        <img
+          src="/images/logo/isaac-hong-logo.png"
+          alt="Isaac Hong"
+          className="h-8 w-auto mx-auto mix-blend-multiply opacity-85"
+        />
         <p
           className="text-[11px] mt-2 tracking-[0.35em] uppercase"
           style={{ color: 'var(--muted)' }}
