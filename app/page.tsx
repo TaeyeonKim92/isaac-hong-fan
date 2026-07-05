@@ -4,6 +4,7 @@ import Image from 'next/image'
 import AlbumCarousel from './components/AlbumCarousel'
 import { getArtistInfo, getTopTracks } from '@/lib/lastfm'
 import { getAlbums } from '@/lib/itunes'
+import { getInstagramPosts, formatInstagramDate } from '@/lib/instagram'
 import { getLatestVideos, formatDate } from '@/lib/youtube'
 import { getNewsArticles, formatNewsDate } from '@/lib/news'
 import { getUpcomingPerformances } from '@/lib/kopis'
@@ -22,10 +23,11 @@ function readImages(folder: string): string[] {
 }
 
 export default async function Home() {
-  const [artist, tracks, albums, videos, news, performances] = await Promise.all([
+  const [artist, tracks, albums, instagramPosts, videos, news, performances] = await Promise.all([
     getArtistInfo(),
     getTopTracks(),
     getAlbums('홍이삭'),
+    getInstagramPosts(3),
     getLatestVideos(6),
     getNewsArticles('홍이삭', 6),
     getUpcomingPerformances('홍이삭'),
@@ -264,6 +266,70 @@ export default async function Home() {
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── 인스타그램 ───────────────────────────────────────────── */}
+      {instagramPosts.length > 0 && (
+        <section id="instagram" className="py-20">
+          <div className="max-w-6xl mx-auto px-6 md:px-10">
+            <div className="flex items-end justify-between gap-6 mb-10">
+              <div>
+                <h2 className="section-title">인스타그램</h2>
+                <div className="section-line !mb-0" />
+              </div>
+              <div className="hidden sm:flex gap-4 text-[11px] tracking-[0.2em] uppercase">
+                <a
+                  href="https://www.instagram.com/hongisaac_official/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:opacity-60 transition-opacity"
+                  style={{ color: 'var(--muted)' }}
+                >
+                  Official
+                </a>
+                <a
+                  href="https://www.instagram.com/pngisac/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:opacity-60 transition-opacity"
+                  style={{ color: 'var(--muted)' }}
+                >
+                  pngisac
+                </a>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {instagramPosts.slice(0, 6).map((post) => (
+                <a
+                  key={post.id}
+                  href={post.permalink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group"
+                >
+                  <div
+                    className="relative aspect-square overflow-hidden rounded-xl mb-3"
+                    style={{ background: 'var(--border)' }}
+                  >
+                    <img
+                      src={post.mediaUrl}
+                      alt={`${post.username} Instagram post`}
+                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <p className="text-xs mb-1" style={{ color: 'var(--muted)' }}>
+                    @{post.username} &middot; {formatInstagramDate(post.timestamp)}
+                  </p>
+                  {post.caption && (
+                    <p className="font-medium text-sm line-clamp-2" style={{ color: 'var(--text)' }}>
+                      {post.caption}
+                    </p>
+                  )}
+                </a>
               ))}
             </div>
           </div>
