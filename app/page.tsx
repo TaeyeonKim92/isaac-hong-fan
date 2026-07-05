@@ -121,13 +121,22 @@ export default async function Home() {
           {/* 링크 버튼 */}
           <div className="flex gap-4 justify-center flex-wrap">
             <a
-              href="https://www.youtube.com/channel/UCsnX5bnTB6NTzzXOguVcqZw"
+              href="https://youtube.com/@pngisacofficial"
               target="_blank"
               rel="noopener noreferrer"
               className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase transition-opacity hover:opacity-70"
               style={{ background: 'var(--text)', color: 'var(--bg)' }}
             >
-              YouTube
+              Official
+            </a>
+            <a
+              href="https://youtube.com/@pngisac-video"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase border transition-all hover:opacity-70"
+              style={{ borderColor: 'var(--text)', color: 'var(--text)' }}
+            >
+              Videos
             </a>
             {artist?.url && (
               <a
@@ -299,7 +308,7 @@ export default async function Home() {
                     {video.title}
                   </p>
                   <p className="text-xs" style={{ color: 'var(--muted)' }}>
-                    {formatDate(video.publishedAt)} &middot; {video.viewCount}회
+                    {video.channelTitle} &middot; {formatDate(video.publishedAt)} &middot; {video.viewCount}회
                   </p>
                 </a>
               ))}
@@ -347,7 +356,7 @@ export default async function Home() {
                 </div>
                 <div className="text-right shrink-0">
                   <span className={`badge ${perf.state === '공연중' ? '!bg-green-50 !text-green-700' : ''}`}>
-                    {perf.state}
+                    {perf.bookingName || perf.state}
                   </span>
                   <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
                     ~{perf.endDate}
