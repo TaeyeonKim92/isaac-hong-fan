@@ -34,7 +34,7 @@ export default function Nav() {
           <img
             src="/images/logo/isaac-hong-logo.png"
             alt="Isaac Hong"
-            className="h-7 w-auto mix-blend-multiply opacity-90"
+            className="h-6 w-auto opacity-90"
           />
         </a>
 

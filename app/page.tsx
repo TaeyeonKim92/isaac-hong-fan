@@ -92,7 +92,7 @@ export default async function Home() {
           <img
             src="/images/logo/isaac-hong-logo.png"
             alt=""
-            className="mx-auto mb-8 w-[min(78vw,48rem)] mix-blend-multiply opacity-95"
+            className="mx-auto mb-8 w-[min(68vw,34rem)] opacity-95"
           />
 
           <p
@@ -528,7 +528,7 @@ export default async function Home() {
         <img
           src="/images/logo/isaac-hong-logo.png"
           alt="Isaac Hong"
-          className="h-8 w-auto mx-auto mix-blend-multiply opacity-85"
+          className="h-8 w-auto mx-auto opacity-85"
         />
         <p
           className="text-[11px] mt-2 tracking-[0.35em] uppercase"
