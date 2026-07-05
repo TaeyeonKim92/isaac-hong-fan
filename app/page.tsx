@@ -92,15 +92,8 @@ export default async function Home() {
           <img
             src="/images/logo/isaac-hong-logo-dark.png"
             alt=""
-            className="mx-auto mb-8 w-[min(68vw,34rem)]"
+            className="mx-auto mb-12 w-[min(68vw,34rem)]"
           />
-
-          <p
-            className="text-lg md:text-xl mb-12"
-            style={{ color: 'var(--muted)', letterSpacing: '0.3em' }}
-          >
-            홍이삭
-          </p>
 
           {/* 링크 버튼 */}
           <div className="flex gap-4 justify-center flex-wrap">
@@ -197,75 +190,6 @@ export default async function Home() {
             </div>
           </section>
         )}
-
-        {/* 히스토리 */}
-        <section id="history" className="py-16 border-t" style={{ borderColor: 'var(--border)' }}>
-          <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-[11px] tracking-[0.35em] uppercase mb-3" style={{ color: 'var(--muted)' }}>
-                History
-              </p>
-              <h2
-                className="font-bold italic"
-                style={{
-                  fontFamily: 'var(--font-playfair), serif',
-                  fontSize: '2.35rem',
-                  color: 'var(--text)',
-                }}
-              >
-                주요 활동과 단독 공연
-              </h2>
-            </div>
-            <p className="text-sm" style={{ color: 'var(--muted)' }}>
-              음악, 방송, 단독 공연 중심
-            </p>
-          </div>
-
-          <div className="-mx-6 overflow-x-auto px-6 pb-3">
-            <div className="relative h-[24rem] min-w-[1120px]">
-              <div className="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-[#b79b83]" />
-              <div
-                className="grid h-full"
-                style={{ gridTemplateColumns: `repeat(${historyItems.length}, minmax(0, 1fr))` }}
-              >
-                {historyItems.map((item, index) => {
-                  const isTop = index % 2 === 0
-
-                  return (
-                    <div key={`${item.year}-${item.title}`} className="relative">
-                      <span className="absolute left-1/2 top-1/2 z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#f7f2ea] bg-[#6b351f]" />
-                      <span
-                        className={`absolute left-1/2 w-px -translate-x-1/2 bg-[#c5ad97] ${
-                          isTop ? 'bottom-1/2 h-9' : 'top-1/2 h-9'
-                        }`}
-                      />
-                      <article
-                        className={`absolute left-1/2 w-[9.7rem] -translate-x-1/2 rounded border bg-[#fbf5ed]/85 p-3 shadow-sm ${
-                          isTop ? 'bottom-[calc(50%+2.25rem)]' : 'top-[calc(50%+2.25rem)]'
-                        }`}
-                        style={{ borderColor: 'rgba(128, 91, 62, 0.22)' }}
-                      >
-                        <p
-                          className="mb-1 text-[12px] font-semibold tabular-nums"
-                          style={{ color: '#6b351f', fontFamily: 'var(--font-playfair), serif' }}
-                        >
-                          {item.year}
-                          {item.date ? <span className="ml-1 font-normal" style={{ color: 'var(--muted)' }}>{item.date}</span> : null}
-                        </p>
-                        <h3 className="mb-1 text-[13px] font-semibold leading-snug" style={{ color: 'var(--text)' }}>
-                          {item.title}
-                        </h3>
-                        <p className="text-[12px] leading-relaxed" style={{ color: 'var(--muted)' }}>
-                          {item.description}
-                        </p>
-                      </article>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* 앨범 */}
         {albums.length > 0 && (
@@ -451,6 +375,72 @@ export default async function Home() {
           </div>
         </section>
       )}
+
+      <div className="max-w-6xl mx-auto px-6 md:px-10">
+        {/* 히스토리 */}
+        <section id="history" className="py-16 border-t" style={{ borderColor: 'var(--border)' }}>
+          <div className="mb-8">
+            <div>
+              <p className="text-[11px] tracking-[0.35em] uppercase mb-3" style={{ color: 'var(--muted)' }}>
+                History
+              </p>
+              <h2
+                className="text-2xl font-semibold md:text-3xl"
+                style={{
+                  color: 'var(--text)',
+                }}
+              >
+                주요 활동과 단독 공연
+              </h2>
+            </div>
+          </div>
+
+          <div className="-mx-6 overflow-x-auto px-6 pb-3">
+            <div className="relative h-[24rem] min-w-[1120px]">
+              <div className="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-[#b79b83]" />
+              <div
+                className="grid h-full"
+                style={{ gridTemplateColumns: `repeat(${historyItems.length}, minmax(0, 1fr))` }}
+              >
+                {historyItems.map((item, index) => {
+                  const isTop = index % 2 === 0
+
+                  return (
+                    <div key={`${item.year}-${item.title}`} className="relative">
+                      <span className="absolute left-1/2 top-1/2 z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#f7f2ea] bg-[#6b351f]" />
+                      <span
+                        className={`absolute left-1/2 w-px -translate-x-1/2 bg-[#c5ad97] ${
+                          isTop ? 'bottom-1/2 h-9' : 'top-1/2 h-9'
+                        }`}
+                      />
+                      <article
+                        className={`absolute left-1/2 w-[9.7rem] -translate-x-1/2 rounded border bg-[#fbf5ed]/85 p-3 shadow-sm ${
+                          isTop ? 'bottom-[calc(50%+2.25rem)]' : 'top-[calc(50%+2.25rem)]'
+                        }`}
+                        style={{ borderColor: 'rgba(128, 91, 62, 0.22)' }}
+                      >
+                        <p
+                          className="mb-1 text-[12px] font-semibold tabular-nums"
+                          style={{ color: '#6b351f', fontFamily: 'var(--font-playfair), serif' }}
+                        >
+                          {item.year}
+                          {item.date ? <span className="ml-1 font-normal" style={{ color: 'var(--muted)' }}>{item.date}</span> : null}
+                        </p>
+                        <h3 className="mb-1 text-[13px] font-semibold leading-snug" style={{ color: 'var(--text)' }}>
+                          {item.title}
+                        </h3>
+                        <p className="text-[12px] leading-relaxed" style={{ color: 'var(--muted)' }}>
+                          {item.description}
+                        </p>
+                      </article>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
 
       {/* ── 공연 일정 + 뉴스 ─────────────────────────────────────── */}
       <div className="max-w-6xl mx-auto px-6 md:px-10">
