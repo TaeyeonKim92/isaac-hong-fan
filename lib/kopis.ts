@@ -3,6 +3,22 @@ const BASE = 'http://www.kopis.or.kr/openApi/restful'
 const POPULAR_MUSIC_GENRE_CODE = process.env.KOPIS_POPULAR_MUSIC_GENRE_CODE?.trim() || 'CCCD'
 const CAST_SCAN_PAGES = Number(process.env.KOPIS_CAST_SCAN_PAGES || '2')
 
+const MANUAL_PERFORMANCES: KopisPerformance[] = [
+  {
+    id: 'manual-the-player-season-3-2026',
+    title: 'THE PLAYER Season 3, LUCY X 홍이삭',
+    venue: 'KBS스포츠월드(아레나)',
+    startDate: '2026.07.18',
+    endDate: '2026.07.19',
+    genre: '대중음악',
+    state: '공연예정',
+    posterUrl: '',
+    detailUrl: 'https://www.ticketlink.co.kr/search?query=THE+PLAYER+Season+3',
+    bookingName: '티켓링크',
+    bookingUrl: 'https://www.ticketlink.co.kr/search?query=THE+PLAYER+Season+3',
+  },
+]
+
 export interface KopisPerformance {
   id: string
   title: string
@@ -203,12 +219,21 @@ function sortPerformances(performances: KopisPerformance[]) {
   return performances.sort((a, b) => a.startDate.localeCompare(b.startDate))
 }
 
+function getManualUpcomingPerformances() {
+  const today = new Date()
+  const todayText = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`
+
+  return MANUAL_PERFORMANCES.filter((performance) => performance.endDate >= todayText)
+}
+
 export async function getUpcomingPerformances(artistName = '홍이삭'): Promise<KopisPerformance[]> {
-  if (!API_KEY) return []
+  const manualPerformances = getManualUpcomingPerformances()
+  if (!API_KEY) return manualPerformances
 
   try {
     const { stdate, eddate } = getDateRange()
     const found = new Map<string, Omit<KopisPerformance, 'detailUrl' | 'bookingName' | 'bookingUrl'>>()
+    const manualByTitle = new Set(manualPerformances.map((item) => `${item.title}-${item.startDate}`))
 
     const directResults = await fetchPerformanceList({
       stdate,
@@ -258,8 +283,13 @@ export async function getUpcomingPerformances(artistName = '홍이삭'): Promise
       }
     }))
 
-    return sortPerformances(performances)
+    const merged = [
+      ...manualPerformances,
+      ...performances.filter((item) => !manualByTitle.has(`${item.title}-${item.startDate}`)),
+    ]
+
+    return sortPerformances(merged)
   } catch {
-    return []
+    return manualPerformances
   }
 }
