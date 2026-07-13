@@ -1,5 +1,7 @@
-const API_KEY = process.env.KOPIS_API_KEY!
+const API_KEY = process.env.KOPIS_API_KEY?.trim()
 const BASE = 'http://www.kopis.or.kr/openApi/restful'
+const POPULAR_MUSIC_GENRE_CODE = process.env.KOPIS_POPULAR_MUSIC_GENRE_CODE?.trim() || 'CCCD'
+const CAST_SCAN_PAGES = Number(process.env.KOPIS_CAST_SCAN_PAGES || '2')
 
 export interface KopisPerformance {
   id: string
@@ -27,8 +29,9 @@ function parseDate(dateText: string): string {
 
 function getDateRange() {
   const now = new Date()
+  now.setDate(1)
   const future = new Date()
-  future.setMonth(future.getMonth() + 6)
+  future.setMonth(future.getMonth() + 12)
   const fmt = (d: Date) =>
     `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
   return { stdate: fmt(now), eddate: fmt(future) }
@@ -56,6 +59,43 @@ function extractXmlBlocks(xml: string, tag: string): string[] {
 
 function extractXmlValue(xml: string, tag: string): string {
   return extractXmlValues(xml, tag)[0] ?? ''
+}
+
+function parsePerformanceList(xml: string): Omit<KopisPerformance, 'detailUrl' | 'bookingName' | 'bookingUrl'>[] {
+  return extractXmlBlocks(xml, 'db')
+    .map((block) => ({
+      id: extractXmlValue(block, 'mt20id'),
+      title: extractXmlValue(block, 'prfnm'),
+      venue: extractXmlValue(block, 'fcltynm'),
+      startDate: parseDate(extractXmlValue(block, 'prfpdfrom')),
+      endDate: parseDate(extractXmlValue(block, 'prfpdto')),
+      genre: extractXmlValue(block, 'genrenm'),
+      state: extractXmlValue(block, 'prfstate'),
+      posterUrl: extractXmlValue(block, 'poster'),
+    }))
+    .filter((item) => item.id && item.title)
+}
+
+async function fetchPerformanceList(params: Record<string, string>): Promise<Omit<KopisPerformance, 'detailUrl' | 'bookingName' | 'bookingUrl'>[]> {
+  if (!API_KEY) return []
+
+  try {
+    const url = new URL(`${BASE}/pblprfr`)
+    url.searchParams.set('service', API_KEY)
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) url.searchParams.set(key, value)
+    })
+
+    const res = await fetch(url)
+    if (!res.ok) return []
+
+    const xml = await res.text()
+    if (extractXmlValue(xml, 'returncode')) return []
+
+    return parsePerformanceList(xml)
+  } catch {
+    return []
+  }
 }
 
 function encodeSearchQuery(query: string): string {
@@ -105,6 +145,8 @@ function isUsableBookingUrl(url: string): boolean {
 }
 
 async function getBookingInfo(id: string, title: string): Promise<{ bookingName: string; bookingUrl: string }> {
+  if (!API_KEY) return { bookingName: '', bookingUrl: '' }
+
   try {
     const res = await fetch(`${BASE}/pblprfr/${id}?service=${API_KEY}`)
     const xml = await res.text()
@@ -132,50 +174,91 @@ async function getBookingInfo(id: string, title: string): Promise<{ bookingName:
   return { bookingName: '', bookingUrl: '' }
 }
 
+async function getPerformancePeople(id: string): Promise<string> {
+  if (!API_KEY) return ''
+
+  try {
+    const res = await fetch(`${BASE}/pblprfr/${id}?service=${API_KEY}`)
+    if (!res.ok) return ''
+
+    const xml = await res.text()
+    return [
+      extractXmlValue(xml, 'prfnm'),
+      extractXmlValue(xml, 'prfcast'),
+      extractXmlValue(xml, 'prfcrew'),
+    ].join(' ')
+  } catch {
+    return ''
+  }
+}
+
+function includesArtist(text: string, artistName: string) {
+  const normalized = text.replace(/\s/g, '').toLowerCase()
+  const artist = artistName.replace(/\s/g, '').toLowerCase()
+
+  return normalized.includes(artist) || normalized.includes('isaachong')
+}
+
+function sortPerformances(performances: KopisPerformance[]) {
+  return performances.sort((a, b) => a.startDate.localeCompare(b.startDate))
+}
+
 export async function getUpcomingPerformances(artistName = '홍이삭'): Promise<KopisPerformance[]> {
+  if (!API_KEY) return []
+
   try {
     const { stdate, eddate } = getDateRange()
-    const params = new URLSearchParams({
-      service: API_KEY,
+    const found = new Map<string, Omit<KopisPerformance, 'detailUrl' | 'bookingName' | 'bookingUrl'>>()
+
+    const directResults = await fetchPerformanceList({
       stdate,
       eddate,
       shprfnm: artistName,
-      rows: '10',
+      rows: '100',
       cpage: '1',
     })
-    const res = await fetch(`${BASE}/pblprfr?${params}`)
-    const xml = await res.text()
 
-    const ids = extractXmlValues(xml, 'mt20id')
-    const titles = extractXmlValues(xml, 'prfnm')
-    const venues = extractXmlValues(xml, 'fcltynm')
-    const startDates = extractXmlValues(xml, 'prfpdfrom')
-    const endDates = extractXmlValues(xml, 'prfpdto')
-    const genres = extractXmlValues(xml, 'genrenm')
-    const states = extractXmlValues(xml, 'prfstate')
-    const posters = extractXmlValues(xml, 'poster')
+    directResults.forEach((item) => found.set(item.id, item))
 
-    const performances = await Promise.all(ids.map(async (id, i) => {
-      const title = titles[i] ?? ''
-      const detailUrl = `http://www.kopis.or.kr/por/db/perf/prfDetail.do?menuId=MNU_00010&mt20id=${id}`
-      const booking = await getBookingInfo(id, title)
+    const scanPages = Number.isFinite(CAST_SCAN_PAGES) ? Math.max(0, Math.min(CAST_SCAN_PAGES, 5)) : 2
+    if (scanPages > 0) {
+      const pages = await Promise.all(
+        Array.from({ length: scanPages }, (_, page) =>
+          fetchPerformanceList({
+            stdate,
+            eddate,
+            shcate: POPULAR_MUSIC_GENRE_CODE,
+            rows: '100',
+            cpage: String(page + 1),
+          })
+        )
+      )
+      const scanCandidates = pages.flat().filter((item) => !found.has(item.id))
+      const matchedByPeople = await Promise.all(
+        scanCandidates.map(async (item) => {
+          const people = await getPerformancePeople(item.id)
+          return includesArtist(`${item.title} ${people}`, artistName) ? item : null
+        })
+      )
+
+      matchedByPeople.forEach((item) => {
+        if (item) found.set(item.id, item)
+      })
+    }
+
+    const performances = await Promise.all(Array.from(found.values()).map(async (item) => {
+      const detailUrl = `http://www.kopis.or.kr/por/db/perf/prfDetail.do?menuId=MNU_00010&mt20id=${item.id}`
+      const booking = await getBookingInfo(item.id, item.title)
 
       return {
-        id,
-        title,
-        venue: venues[i] ?? '',
-        startDate: parseDate(startDates[i] ?? ''),
-        endDate: parseDate(endDates[i] ?? ''),
-        genre: genres[i] ?? '',
-        state: states[i] ?? '',
-        posterUrl: posters[i] ?? '',
+        ...item,
         detailUrl: booking.bookingUrl || detailUrl,
         bookingName: booking.bookingName,
         bookingUrl: booking.bookingUrl,
       }
     }))
 
-    return performances
+    return sortPerformances(performances)
   } catch {
     return []
   }
