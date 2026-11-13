@@ -210,14 +210,48 @@ export default async function Home() {
           </section>
         )}
 
-        {/* 앨범 */}
-        {albums.length > 0 && (
-          <section id="albums" className="py-20 border-t" style={{ borderColor: 'var(--border)' }}>
-            <h2 className="section-title">앨범</h2>
-            <div className="section-line" />
+        {/* 앨범 — 데이터가 없어도 내비게이션 앵커와 플랫폼 안내를 유지 */}
+        <section id="albums" className="scroll-mt-16 py-20 border-t" style={{ borderColor: 'var(--border)' }}>
+          <h2 className="section-title">앨범</h2>
+          <div className="section-line" />
+          {albums.length > 0 ? (
             <AlbumCarousel albums={albums} />
-          </section>
-        )}
+          ) : (
+            <div
+              className="rounded-2xl border px-6 py-8 sm:flex sm:items-center sm:justify-between sm:gap-8"
+              style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+            >
+              <div>
+                <p className="font-medium" style={{ color: 'var(--text)' }}>
+                  앨범 목록은 공식 음원 플랫폼에서 확인할 수 있어요.
+                </p>
+                <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
+                  자동 앨범 데이터가 준비되지 않은 동안 Spotify와 Melon으로 연결합니다.
+                </p>
+              </div>
+              <div className="mt-5 flex shrink-0 gap-3 sm:mt-0">
+                <a
+                  href="https://open.spotify.com/search/%ED%99%8D%EC%9D%B4%EC%82%AD/artists"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border px-5 py-2 text-[10px] tracking-[0.2em] uppercase transition-opacity hover:opacity-60"
+                  style={{ borderColor: 'var(--text)', color: 'var(--text)' }}
+                >
+                  Spotify
+                </a>
+                <a
+                  href="https://www.melon.com/search/total/index.htm?q=%ED%99%8D%EC%9D%B4%EC%82%AD"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border px-5 py-2 text-[10px] tracking-[0.2em] uppercase transition-opacity hover:opacity-60"
+                  style={{ borderColor: 'var(--text)', color: 'var(--text)' }}
+                >
+                  Melon
+                </a>
+              </div>
+            </div>
+          )}
+        </section>
 
         {/* 트랙 */}
         {(tracks.length > 0 || latestTracks.length > 0) && (
