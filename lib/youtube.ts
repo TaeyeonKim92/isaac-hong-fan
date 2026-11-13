@@ -1,3 +1,5 @@
+import musicTitleOverrides from '@/data/music-title-overrides.json'
+
 const API_KEY = process.env.YOUTUBE_API_KEY!
 const YOUTUBE_CHANNEL_HANDLES = ['@pngisac-video', '@pngisacofficial']
 const YOUTUBE_RELEASES_URL = 'https://www.youtube.com/@pngisacofficial/releases?hl=ko&gl=KR'
@@ -102,6 +104,12 @@ export interface YouTubeMusicTracks {
   latest: YouTubeMusicTrack[]
   popular: YouTubeMusicTrack[]
 }
+
+const verifiedMusicTitles = musicTitleOverrides as Record<string, {
+  title: string
+  sourceUrl: string
+  verifiedAt: string
+}>
 
 interface YouTubeReleasePlaylist {
   id: string
@@ -247,7 +255,11 @@ export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTrac
         const viewCountValue = Number(video.statistics?.viewCount ?? 0)
         return {
           id: video.id,
-          title: video.snippet?.localized?.title ?? video.snippet?.title ?? '',
+          title:
+            verifiedMusicTitles[video.id]?.title
+            ?? video.snippet?.localized?.title
+            ?? video.snippet?.title
+            ?? '',
           thumbnailUrl:
             video.snippet?.thumbnails?.medium?.url
             ?? video.snippet?.thumbnails?.default?.url

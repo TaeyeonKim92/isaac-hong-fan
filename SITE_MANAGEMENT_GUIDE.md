@@ -188,6 +188,7 @@ public/images/
 - Releases 탭 구조를 읽지 못하면 일반 업로드로 대체하지 않고 음악 섹션을 숨긴다.
 - 배포 전 `npm run check:youtube-releases`로 Releases 구조와 발매 플레이리스트 추출을 검증한다.
 - YouTube Data API 요청에 `hl=ko`를 지정해 업로더가 등록한 공식 한국어 현지화 제목을 우선한다. 값이 없으면 원문 제목을 유지한다.
+- API에 한국어 현지화 제목이 없으면 멜론·벅스 등 공식 유통 음원 페이지에서 확인한 제목만 `data/music-title-overrides.json`에 근거 URL·확인일과 함께 기록한다. 런타임 HTML 파싱은 하지 않는다.
 - 개별 음악 항목은 무료 계정에서도 재생 가능한 `youtube.com/watch?v=...`로 연결하고, 상단 아티스트 버튼만 YouTube Music으로 연결한다.
 - `YOUTUBE_API_KEY`와 일일 API 할당량이 필요하다.
 

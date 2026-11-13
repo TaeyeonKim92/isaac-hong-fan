@@ -50,4 +50,6 @@ npm run build
 - 음악 로직을 수정하거나 배포하기 전에는 `npm run check:youtube-releases`가 통과해야 한다.
 - 조회수 기반 목록을 YouTube Music 공식 차트라고 표현하지 않는다. 화면에는 `공식 채널 조회수 기준`을 명시한다.
 - 곡 제목은 YouTube Data API에 `hl=ko`를 지정해 공식 한국어 현지화 제목을 우선한다. 현지화 제목이 없으면 원문을 유지하며 임의 번역하지 않는다.
+- 공식 국내 음원 페이지에서 한국어 곡명을 확인한 경우 `data/music-title-overrides.json`에 YouTube 영상 ID, 공식 제목, 근거 URL, 확인일을 저장한다. 이 검증값이 API 제목보다 우선한다.
+- 멜론·벅스 HTML을 런타임에 직접 파싱하지 않는다. 페이지 구조 변경이나 접근 차단이 사이트 장애로 이어지지 않게 한다.
 - 개별 곡 링크는 무료 계정에서도 열리는 `https://www.youtube.com/watch?v=VIDEO_ID` 형식으로 연결한다. 상단 아티스트 버튼만 YouTube Music을 사용한다.
