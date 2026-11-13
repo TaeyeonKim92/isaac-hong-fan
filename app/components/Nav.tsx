@@ -24,7 +24,6 @@ export default function Nav() {
         <div className="hidden md:flex gap-10">
           <a href="#albums" className={linkClass}>Albums</a>
           <a href="#videos" className={linkClass}>Gallery</a>
-          <a href="#history" className={linkClass}>History</a>
         </div>
 
         <a
@@ -39,7 +38,7 @@ export default function Nav() {
         </a>
 
         <div className="hidden md:flex gap-10">
-          <a href="#tour" className={linkClass}>Tour</a>
+          <a href="#schedule" className={linkClass}>Schedule</a>
           <a href="#news" className={linkClass}>News</a>
         </div>
       </div>

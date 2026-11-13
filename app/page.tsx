@@ -3,13 +3,13 @@ import path from 'path'
 import Image from 'next/image'
 import AlbumCarousel from './components/AlbumCarousel'
 import VideoCarousel from './components/VideoCarousel'
+import ScheduleCalendar from './components/ScheduleCalendar'
 import { getArtistInfo } from '@/lib/lastfm'
-import { getAlbums } from '@/lib/itunes'
 import { getInstagramPosts, formatInstagramDate } from '@/lib/instagram'
 import { getLatestVideos, getYouTubeMusicTracks } from '@/lib/youtube'
 import { getNewsArticles, formatNewsDate } from '@/lib/news'
 import { getUpcomingPerformances } from '@/lib/kopis'
-import { historyItems } from '@/lib/history'
+import { getScheduleEvents } from '@/lib/schedule'
 
 export const revalidate = 86400
 
@@ -29,9 +29,8 @@ function readImages(folder: string): string[] {
 }
 
 export default async function Home() {
-  const [artist, albums, youtubeMusic, instagramPosts, videos, news, performances] = await Promise.all([
+  const [artist, youtubeMusic, instagramPosts, videos, news, performances] = await Promise.all([
     getArtistInfo(),
-    getAlbums('홍이삭'),
     getYouTubeMusicTracks(5),
     getInstagramPosts(3),
     getLatestVideos(50),
@@ -46,6 +45,8 @@ export default async function Home() {
 
   const heroBg = heroImages[0] ?? null
   const profileSrc = profileImages[0] ?? null
+  const scheduleEvents = getScheduleEvents(performances)
+  const albums = youtubeMusic.releases
 
   return (
     <main>
@@ -222,9 +223,20 @@ export default async function Home() {
           </section>
         )}
 
-        {/* 앨범 — 데이터가 없어도 내비게이션 앵커와 플랫폼 안내를 유지 */}
+        {/* YouTube 공식 아티스트 채널 Releases 기반 발매 목록 */}
         <section id="albums" className="scroll-mt-16 py-20 border-t" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="section-title">앨범</h2>
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <h2 className="section-title">앨범 · 싱글</h2>
+            <a
+              href="https://www.youtube.com/@pngisacofficial/releases"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mb-2 text-[10px] uppercase tracking-[0.18em] transition-opacity hover:opacity-60"
+              style={{ color: 'var(--muted)' }}
+            >
+              YouTube Releases &rarr;
+            </a>
+          </div>
           <div className="section-line" />
           {albums.length > 0 ? (
             <AlbumCarousel albums={albums} />
@@ -238,7 +250,7 @@ export default async function Home() {
                   앨범 목록은 공식 음원 플랫폼에서 확인할 수 있어요.
                 </p>
                 <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
-                  자동 앨범 데이터가 준비되지 않은 동안 Spotify와 Melon으로 연결합니다.
+                  YouTube Releases를 불러오지 못해 공식 음원 플랫폼으로 연결합니다.
                 </p>
               </div>
               <div className="mt-5 flex shrink-0 flex-wrap gap-3 sm:mt-0 sm:justify-end">
@@ -467,140 +479,11 @@ export default async function Home() {
       )}
 
       <div className="max-w-6xl mx-auto px-6 md:px-10">
-        {/* 히스토리 */}
-        <section id="history" className="py-16 border-t" style={{ borderColor: 'var(--border)' }}>
-          <div className="mb-8">
-            <div>
-              <p className="text-[11px] tracking-[0.35em] uppercase mb-3" style={{ color: 'var(--muted)' }}>
-                History
-              </p>
-              <h2
-                className="text-2xl font-semibold md:text-3xl"
-                style={{
-                  color: 'var(--text)',
-                }}
-              >
-                주요 활동과 단독 공연
-              </h2>
-            </div>
-          </div>
-
-          <div className="-mx-6 overflow-x-auto px-6 pb-3">
-            <div className="relative h-[24rem] min-w-[1120px]">
-              <div className="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-[#b79b83]" />
-              <div
-                className="grid h-full"
-                style={{ gridTemplateColumns: `repeat(${historyItems.length}, minmax(0, 1fr))` }}
-              >
-                {historyItems.map((item, index) => {
-                  const isTop = index % 2 === 0
-
-                  return (
-                    <div key={`${item.year}-${item.title}`} className="relative">
-                      <span className="absolute left-1/2 top-1/2 z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#f7f2ea] bg-[#6b351f]" />
-                      <span
-                        className={`absolute left-1/2 w-px -translate-x-1/2 bg-[#c5ad97] ${
-                          isTop ? 'bottom-1/2 h-9' : 'top-1/2 h-9'
-                        }`}
-                      />
-                      <article
-                        className={`absolute left-1/2 w-[9.7rem] -translate-x-1/2 rounded border bg-[#fbf5ed]/85 p-3 shadow-sm ${
-                          isTop ? 'bottom-[calc(50%+2.25rem)]' : 'top-[calc(50%+2.25rem)]'
-                        }`}
-                        style={{ borderColor: 'rgba(128, 91, 62, 0.22)' }}
-                      >
-                        <p
-                          className="mb-1 text-[12px] font-semibold tabular-nums"
-                          style={{ color: '#6b351f', fontFamily: 'var(--font-playfair), serif' }}
-                        >
-                          {item.year}
-                          {item.date ? <span className="ml-1 font-normal" style={{ color: 'var(--muted)' }}>{item.date}</span> : null}
-                        </p>
-                        <h3 className="mb-1 text-[13px] font-semibold leading-snug" style={{ color: 'var(--text)' }}>
-                          {item.title}
-                        </h3>
-                        <p className="text-[12px] leading-relaxed" style={{ color: 'var(--muted)' }}>
-                          {item.description}
-                        </p>
-                      </article>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        </section>
+        <ScheduleCalendar events={scheduleEvents} />
       </div>
 
-      {/* ── 공연 일정 + 뉴스 ─────────────────────────────────────── */}
+      {/* ── 뉴스 ─────────────────────────────────────────────────── */}
       <div className="max-w-6xl mx-auto px-6 md:px-10">
-        {performances.length > 0 && (
-          <section id="tour" className="py-20 border-t" style={{ borderColor: 'var(--border)' }}>
-            <h2 className="section-title">공연 일정</h2>
-            <div className="section-line" />
-            {performances.map((perf) => (
-              <a
-                key={perf.id}
-                href={perf.detailUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block py-5 border-b group"
-                style={{ borderColor: 'var(--border)' }}
-              >
-                <div className="flex items-center gap-5 sm:gap-8">
-                  <div className="shrink-0 w-20 text-center">
-                    <p className="text-[11px] tracking-widest" style={{ color: 'var(--muted)' }}>
-                      {perf.startDate.slice(0, 7)}
-                    </p>
-                    <p
-                      className="text-3xl font-bold tabular-nums"
-                      style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--text)' }}
-                    >
-                      {perf.startDate.slice(8)}
-                    </p>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className="font-medium group-hover:opacity-60 transition-opacity"
-                      style={{ color: 'var(--text)' }}
-                    >
-                      {perf.title}
-                    </p>
-                    <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>
-                      {perf.venue}
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <span className={`badge ${perf.state === '공연중' ? '!bg-green-50 !text-green-700' : ''}`}>
-                      {perf.bookingName || perf.state}
-                    </span>
-                    <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
-                      {perf.schedule ? `${perf.schedule.length}회 공연` : `~${perf.endDate}`}
-                    </p>
-                  </div>
-                </div>
-
-                {perf.schedule && perf.schedule.length > 0 && (
-                  <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:ml-28">
-                    {perf.schedule.map((show) => (
-                      <div
-                        key={`${perf.id}-${show.date}`}
-                        className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 transition-colors group-hover:bg-white/40"
-                        style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-                      >
-                        <span className="text-xs tabular-nums">
-                          {show.date.slice(5)} <span style={{ color: 'var(--muted)' }}>({show.day})</span>
-                        </span>
-                        <span className="text-xs font-semibold tabular-nums">{show.time}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </a>
-            ))}
-          </section>
-        )}
-
         {news.length > 0 && (
           <section id="news" className="py-20 border-t" style={{ borderColor: 'var(--border)' }}>
             <h2 className="section-title">뉴스 · 기사</h2>

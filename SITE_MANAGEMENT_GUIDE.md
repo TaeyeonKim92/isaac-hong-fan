@@ -26,7 +26,7 @@ flowchart TD
     V --> P[app/page.tsx<br/>서버 컴포넌트 + ISR 24시간]
     P --> A[Promise.all 병렬 조회]
     A --> LF[Last.fm<br/>프로필 소개]
-    A --> IT[iTunes Search<br/>앨범]
+    A --> YTR[YouTube Releases<br/>앨범·싱글·OST]
     A --> IG[Instagram Graph API<br/>최근 게시물]
     A --> YT[YouTube Data API<br/>최근 영상·최근 음악·인기 음악]
     A --> GN[Google News RSS<br/>뉴스]
@@ -57,7 +57,7 @@ app/
 ├─ globals.css                  색상 토큰, 공통 컴포넌트 스타일, 애니메이션
 ├─ components/
 │  ├─ Nav.tsx                  고정형 상단 내비게이션
-│  ├─ AlbumCarousel.tsx        앨범 8개 단위 페이지 전환
+│  ├─ AlbumCarousel.tsx        YouTube 발매작 6개 단위 페이지 전환
 │  └─ VideoCarousel.tsx        영상 6개 단위 페이지 전환
 └─ api/
    ├─ test-lastfm/route.ts      Last.fm 연결 진단 API
@@ -66,7 +66,7 @@ app/
 lib/
 ├─ history.ts                   수동 관리하는 주요 활동 타임라인
 ├─ instagram.ts                 Instagram Business Discovery 조회
-├─ itunes.ts                    앨범과 최신 정규/EP 트랙 조회·필터
+├─ itunes.ts                    iTunes 조회 유틸리티; 현재 홈에서는 미사용
 ├─ kopis.ts                     공연 검색, 출연진 보조 검색, 예매 링크 보정
 ├─ lastfm.ts                    프로필 소개와 진단용 인기 트랙 함수
 ├─ news.ts                      Google News RSS 파싱
@@ -115,15 +115,15 @@ public/images/
 ### 레이아웃과 반응형
 
 - 콘텐츠 최대 폭은 대부분 `max-w-6xl`이다.
-- 데스크톱 상단 메뉴: Albums / Gallery / History / 중앙 로고 / Tour / News.
+- 데스크톱 상단 메뉴: Albums / Gallery / 중앙 로고 / Schedule / News.
 - 앨범 데이터가 비어도 `#albums` 앵커와 섹션을 유지하고 YouTube Music·Spotify·Melon 안내 링크를 표시한다.
 - `md` 미만에서는 텍스트 메뉴 전체가 숨고 중앙 로고만 남는다. 모바일 대체 메뉴나 햄버거 버튼은 없다.
-- 앨범: 모바일 2열, 데스크톱 4열, 한 페이지 최대 8개.
+- 앨범·싱글: 모바일 1열, 태블릿 2열, 데스크톱 3열, 한 페이지 최대 6개.
 - 공식 YouTube 음악은 `최근 음악`과 `인기 음악`의 2열로 표시한다.
 - 영상: 모바일 1열, `md` 이상 3열, 한 페이지 최대 6개.
 - Instagram: 모바일 1열, `sm` 2열, `lg` 3열.
 - 갤러리: 2열 → 3열 → 4열.
-- 히스토리는 최소 폭 1120px의 가로 타임라인이라 작은 화면에서 가로 스크롤한다.
+- 공식 일정은 모든 화면에서 월간 달력으로 표시한다. 데스크톱은 선택 날짜 상세 패널을 오른쪽에, 모바일은 달력 아래에 배치한다.
 
 ### 상호작용
 
@@ -131,7 +131,7 @@ public/images/
 - 히어로의 주 버튼은 공식 Instagram, 공식 YouTube, YouTube Music, Spotify, Melon으로 구성한다.
 - Spotify와 Melon은 검색 결과가 아닌 홍이삭 아티스트 상세 페이지로 직접 연결한다.
 - Vlog YouTube와 개인 Instagram은 공식 채널과 구분되는 보조 텍스트 링크로 표시한다.
-- 음악 항목은 YouTube Music의 해당 곡으로 직접 연결한다.
+- 앨범 카드는 무료로 열리는 YouTube 발매 플레이리스트, 개별 음악은 YouTube 영상으로 연결한다.
 - 모든 외부 콘텐츠 링크는 새 탭에서 열린다.
 - 앨범과 영상은 페이지 점과 좌우 화살표로 이동한다.
 - 영상 썸네일은 hover 시 플레이 아이콘 오버레이가 나타난다.
@@ -143,13 +143,12 @@ public/images/
 |---|---|---|---|---|
 | 히어로 | `public/images/hero` | `app/page.tsx` | 배포 시 반영 | 배경 사진 교체·추가 |
 | 프로필 | 로컬 이미지 + Last.fm bio | `app/page.tsx`, `lib/lastfm.ts` | bio는 ISR | 프로필 사진 교체, 소개 문구 품질 보정 |
-| 앨범 | iTunes Search API | `lib/itunes.ts` | ISR | 검색 누락, 아티스트명 변경, 필터 오판 |
+| 앨범·싱글 | YouTube Releases | `lib/youtube.ts` | ISR | Releases 탭 구조 변경, 공식 채널 변경 |
 | 최근·인기 음악 | YouTube Data API v3 | `lib/youtube.ts` | ISR | API 키·할당량 문제, 공식 채널 또는 음악 카테고리 변경 |
 | 갤러리 | `public/images/gallery` | `app/page.tsx` | 배포 시 반영 | 사진 추가·삭제·순서 변경 |
 | Instagram | Instagram Graph API | `lib/instagram.ts` | ISR | 액세스 토큰 만료, 계정명 변경, API 버전 변경 |
 | 최신 영상 | YouTube Data API v3 | `lib/youtube.ts` | ISR | API 키·할당량 문제, 채널 handle 변경 |
-| 히스토리 | 코드 내 배열 | `lib/history.ts` | 자동 아님 | 새 앨범, 수상, 방송, 단독 공연 등 주요 이력 발생 |
-| 공연 일정 | KOPIS + 코드 내 수동 목록 | `lib/kopis.ts` | ISR | KOPIS 누락 공연, 잘못된 예매 링크, 수동 일정 만료 |
+| 공식 일정 | 승인 일정 JSON + 공연 회차 | `data/schedule.json`, `data/performances.json`, `lib/schedule.ts` | 배포 시 반영 | 공식 Instagram 일정 승인, 공연 추가·변경·취소 |
 | 뉴스 | Google News RSS | `lib/news.ts` | ISR | 검색 품질 저하, HTML 엔티티 노출, 무관 기사 증가 |
 
 ### 로컬 이미지 규칙
@@ -175,7 +174,7 @@ public/images/
 - API 키가 필요 없다.
 - 검색 결과의 `artistName`이 정확히 `홍이삭`인 앨범만 허용한다.
 - 특정 싱글 3개를 이름으로 제외한다.
-- 2026-11-13 확인 당시 iTunes 검색 결과가 비어 있어 라이브 사이트는 앨범 대신 공식 음원 플랫폼 안내를 표시한다.
+- 2026-11-13 확인 당시 검색 결과가 비어 있어 홈 앨범 소스에서는 제외했다. `lib/itunes.ts`는 보조 유틸리티로만 남아 있다.
 
 ### YouTube Data API v3
 
@@ -183,6 +182,7 @@ public/images/
 - 업로드 날짜순으로 정렬하고 최대 50개를 홈으로 전달한다.
 - 별도 통계 요청으로 조회수를 붙인다.
 - 공식 아티스트 채널의 `/releases` 탭에서 `OLAK5uy_...` 발매 플레이리스트 ID만 수집한다.
+- Releases 탭의 묶음 순서, 제목, 커버, 아티스트명과 수록곡 수를 앨범·싱글 카드로 표시한다.
 - 각 발매 플레이리스트의 실제 트랙과 조회수는 YouTube Data API로 조회한다. 일반 자체 콘텐츠 영상은 포함하지 않는다.
 - `최근 음악`은 YouTube 영상 업로드일이 아니라 Releases 탭의 발매 목록 순서와 앨범 내 트랙 순서를 따른다. 유통사 이전으로 과거 음원이 재업로드될 수 있기 때문이다.
 - 최근 음악에는 오해를 부르는 영상 업로드 날짜 대신 발매 앨범명을 표시한다. `인기 음악`은 조회수순이며 YouTube Music 자체 차트는 아니다.
@@ -218,6 +218,12 @@ public/images/
 - 공식 상품이 아직 열리지 않았으면 검색 URL을 넣지 않고 `bookingStatus: upcoming`, 빈 `bookingUrl`, 공식 `sourceUrl`로 보류한다.
 
 ### 공식 Instagram 일정 수신함
+
+- Google Sheet는 일정 후보의 검수·승인 기준 데이터다.
+- 사이트에는 시트에서 승인된 일반 일정만 `data/schedule.json`으로 동기화하며, 과거 월 탐색을 위해 승인된 연간 일정을 유지한다.
+- 공연 회차는 `data/performances.json`에서 가져와 `lib/schedule.ts`가 일반 일정과 합친다.
+- `app/components/ScheduleCalendar.tsx`는 반응형 월간 달력과 선택 날짜 상세 패널을 렌더링한다.
+- `review`, `rejected`, `cancelled` 상태는 공개 JSON에 넣지 않는다.
 
 - Meta API 없이 공식 Instagram을 1차 출처로 사용한다.
 - 사용자가 로그인된 브라우저 탭, 게시물 URL 또는 포스터 이미지를 제공하면 에이전트가 캡션과 이미지 문자를 읽는다.
@@ -357,6 +363,7 @@ public/images/
 ### 노출 중
 
 - 히어로와 플랫폼 링크
+- YouTube Releases 기반 앨범·싱글·OST 카드
 - YouTube 공식 채널 기반 최근 음악·인기 음악
 - YouTube 최신 영상
 - 주요 활동과 단독 공연 타임라인
@@ -366,7 +373,6 @@ public/images/
 ### 미노출
 
 - 프로필: `public/images/profile`에 실제 이미지 없음
-- 앨범: iTunes 검색 결과가 비어 있어 공식 음원 플랫폼 안내를 표시
 - 갤러리: `public/images/gallery`에 실제 이미지 없음
 - Instagram: 데이터가 비었거나 환경변수/토큰 조건을 충족하지 못한 상태로 추정
 
@@ -395,7 +401,7 @@ public/images/
 
 1. `.env.local.example`에 `LASTFM_API_KEY`를 추가한다.
 2. README를 현재 데이터 소스와 환경변수에 맞게 고친다.
-3. iTunes 결과가 비어도 앨범을 보여 줄 수 있는 대체 데이터 소스를 마련한다.
+3. YouTube Releases 카드가 장기간 비어 있을 때 알림을 받을 수 있는 상태 점검을 마련한다.
 4. 외부 API 오류를 모두 조용히 삼키지 말고 Vercel Logs에서 원인을 식별할 수 있는 구조화 로그를 남긴다.
 5. 환경변수와 API별 상태를 키 노출 없이 확인하는 내부 health check를 설계한다.
 

@@ -101,7 +101,18 @@ export interface YouTubeMusicTrack {
   url: string
 }
 
+export interface YouTubeReleaseAlbum {
+  id: string
+  name: string
+  artistName: string
+  trackCount: number
+  artworkUrl: string
+  backdropColor: string
+  url: string
+}
+
 export interface YouTubeMusicTracks {
+  releases: YouTubeReleaseAlbum[]
   latest: YouTubeMusicTrack[]
   popular: YouTubeMusicTrack[]
 }
@@ -115,6 +126,10 @@ const verifiedMusicTitles = musicTitleOverrides as Record<string, {
 interface YouTubeReleasePlaylist {
   id: string
   title: string
+  artistName: string
+  trackCount: number
+  thumbnailUrl: string
+  backdropColor: string
 }
 
 interface YouTubeReleaseVideo {
@@ -180,10 +195,34 @@ function getReleasePlaylists(html: string): YouTubeReleasePlaylist[] {
 
     const playlist = value.compactPlaylistRenderer ?? value.playlistRenderer
     if (playlist?.playlistId?.startsWith('OLAK5uy_') && !seen.has(playlist.playlistId)) {
+      const customThumbnail = playlist.thumbnailRenderer
+        ?.playlistCustomThumbnailRenderer
+        ?.thumbnail
+      const customThumbnails = customThumbnail?.thumbnails ?? []
+      const trackThumbnails = (playlist.thumbnails ?? [])
+        .flatMap((group: any) => group.thumbnails ?? [])
+        .filter((thumbnail: any) => thumbnail?.url)
+      const thumbnail = [...customThumbnails, ...trackThumbnails].sort(
+        (a: any, b: any) => (b.width ?? 0) * (b.height ?? 0) - (a.width ?? 0) * (a.height ?? 0),
+      )[0]
+      const sampledColor = customThumbnail?.sampledThumbnailColor
+      const backdropColor = sampledColor
+        ? `rgb(${sampledColor.red}, ${sampledColor.green}, ${sampledColor.blue})`
+        : 'var(--border)'
+      const byline = (playlist.shortBylineText?.runs ?? [])
+        .map((run: any) => run.text ?? '')
+        .join('')
+        .replace(/\s*·\s*앨범\s*$/, '')
+        .trim()
+
       seen.add(playlist.playlistId)
       playlists.push({
         id: playlist.playlistId,
         title: playlist.title?.simpleText ?? playlist.title?.runs?.[0]?.text ?? '',
+        artistName: byline || '홍이삭',
+        trackCount: Number(playlist.videoCount ?? 0),
+        thumbnailUrl: thumbnail?.url ?? '',
+        backdropColor,
       })
     }
 
@@ -238,21 +277,31 @@ async function getReleaseVideos(playlists: YouTubeReleasePlaylist[]): Promise<Yo
 
 export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTracks> {
   try {
-    if (!API_KEY) return { latest: [], popular: [] }
-
     const releasesRes = await fetch(YOUTUBE_RELEASES_URL, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; IsaacHongFan/1.0)',
         'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
       },
     })
-    if (!releasesRes.ok) return { latest: [], popular: [] }
+    if (!releasesRes.ok) return { releases: [], latest: [], popular: [] }
 
     const releasePlaylists = getReleasePlaylists(await releasesRes.text())
-    if (releasePlaylists.length === 0) return { latest: [], popular: [] }
+    if (releasePlaylists.length === 0) return { releases: [], latest: [], popular: [] }
+
+    const releases = releasePlaylists.map((playlist) => ({
+      id: playlist.id,
+      name: playlist.title,
+      artistName: playlist.artistName,
+      trackCount: playlist.trackCount,
+      artworkUrl: playlist.thumbnailUrl,
+      backdropColor: playlist.backdropColor,
+      url: `https://www.youtube.com/playlist?list=${playlist.id}`,
+    }))
+
+    if (!API_KEY) return { releases, latest: [], popular: [] }
 
     const releaseVideos = await getReleaseVideos(releasePlaylists)
-    if (releaseVideos.length === 0) return { latest: [], popular: [] }
+    if (releaseVideos.length === 0) return { releases, latest: [], popular: [] }
     const videoIds = releaseVideos.map((video) => video.id)
     const releaseByVideoId = new Map(releaseVideos.map((video) => [video.id, video]))
 
@@ -316,9 +365,9 @@ export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTrac
         ...video
       }) => video)
 
-    return { latest, popular }
+    return { releases, latest, popular }
   } catch {
-    return { latest: [], popular: [] }
+    return { releases: [], latest: [], popular: [] }
   }
 }
 

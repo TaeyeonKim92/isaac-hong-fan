@@ -1,60 +1,62 @@
 'use client'
 import { useState } from 'react'
 import Image from 'next/image'
-import type { ItunesAlbum } from '@/lib/itunes'
+import type { YouTubeReleaseAlbum } from '@/lib/youtube'
 
-const PER_PAGE = 8
+const PER_PAGE = 6
 
-export default function AlbumCarousel({ albums }: { albums: ItunesAlbum[] }) {
+export default function AlbumCarousel({ albums }: { albums: YouTubeReleaseAlbum[] }) {
   const [page, setPage] = useState(0)
 
   const totalPages = Math.ceil(albums.length / PER_PAGE)
-  const visible = Array.from({ length: PER_PAGE }, (_, i) =>
-    albums[(page * PER_PAGE + i) % albums.length]
-  )
+  const visible = albums.slice(page * PER_PAGE, (page + 1) * PER_PAGE)
 
   const navigate = (dir: 1 | -1) =>
     setPage((p) => (p + dir + totalPages) % totalPages)
 
   return (
     <div>
-      {/* 원래 잘 되던 그리드 구조 그대로 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-        {visible.map((album, i) => (
+      <div className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+        {visible.map((album) => (
           <a
-            key={`${page}-${i}`}
+            key={album.id}
             href={album.url}
             target="_blank"
             rel="noopener noreferrer"
             className="group"
           >
             <div
-              className="aspect-square relative overflow-hidden rounded-xl mb-2"
-              style={{ background: 'var(--border)' }}
+              className="relative mb-3 aspect-video overflow-hidden rounded-xl"
+              style={{ background: album.backdropColor }}
             >
               {album.artworkUrl ? (
                 <Image
                   src={album.artworkUrl}
                   alt={album.name}
                   fill
-                  sizes="(max-width: 640px) 50vw, 25vw"
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-contain group-hover:scale-105 transition-transform duration-500"
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-4xl">🎵</div>
               )}
+              <span
+                className="absolute bottom-2 right-2 rounded px-2 py-1 text-[11px] font-semibold text-white"
+                style={{ background: 'rgba(38, 26, 14, 0.78)' }}
+              >
+                ♪ {album.trackCount}곡
+              </span>
             </div>
-            <p className="font-semibold text-sm truncate" style={{ color: 'var(--text)' }}>
+            <p className="truncate text-sm font-semibold" style={{ color: 'var(--text)' }}>
               {album.name}
             </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
-              {album.releaseDate}
+            <p className="mt-1 truncate text-xs" style={{ color: 'var(--muted)' }}>
+              {album.artistName} · YouTube Releases
             </p>
           </a>
         ))}
       </div>
 
-      {/* 화살표 + 페이지 인디케이터 */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-8">
           <div className="flex gap-1.5">
@@ -62,6 +64,7 @@ export default function AlbumCarousel({ albums }: { albums: ItunesAlbum[] }) {
               <button
                 key={i}
                 onClick={() => setPage(i)}
+                aria-label={`${i + 1}번째 발매 목록 페이지`}
                 className="rounded-full transition-all duration-200"
                 style={{
                   width: i === page ? '20px' : '6px',
@@ -74,6 +77,7 @@ export default function AlbumCarousel({ albums }: { albums: ItunesAlbum[] }) {
           <div className="flex gap-2">
             <button
               onClick={() => navigate(-1)}
+              aria-label="이전 발매 목록"
               className="w-10 h-10 rounded-full border flex items-center justify-center text-lg hover:opacity-60 transition-opacity"
               style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
             >
@@ -81,6 +85,7 @@ export default function AlbumCarousel({ albums }: { albums: ItunesAlbum[] }) {
             </button>
             <button
               onClick={() => navigate(1)}
+              aria-label="다음 발매 목록"
               className="w-10 h-10 rounded-full border flex items-center justify-center text-lg hover:opacity-60 transition-opacity"
               style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
             >

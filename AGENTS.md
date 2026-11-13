@@ -43,12 +43,17 @@ npm run build
 ## 공식 일정 수신함
 
 - 일정 운영 규칙과 시트 계약은 `SCHEDULE_AGENT.md`를 따른다.
-- 공식 Instagram `@hongisaac_official`을 1차 출처로 사용하되 Meta API가 없으므로 무인 스크래핑을 시도하지 않는다.
+- Mnet Plus 홍이삭 소속사 공식 일정 페이지를 1차 출처로 사용한다. 공식 Instagram `@hongisaac_official`과 공식 예매처는 보충·교차 확인 출처다.
 - 사용자가 제공한 로그인 브라우저 탭, 게시물 URL 또는 포스터 이미지에서 캡션과 이미지 문자를 모두 확인한다.
 - Google Drive의 `홍이삭 공식 일정 관리` 시트에 후보를 기록한다. URL이나 인증 정보는 저장소에 커밋하지 않는다.
 - 게시물 하나의 여러 회차는 회차별 한 행으로 나누고, `sourceMediaId`와 제목+시작일시로 중복을 막는다.
 - 정보가 불완전하면 `status=review`, 공식 출처로 확인되면 `status=approved`를 사용한다.
-- 사이트 캘린더 연동 시에는 `approved` 행만 공개하고 `review`, `rejected`, `cancelled`는 노출하지 않는다.
+- 사이트 반영 요청을 받으면 `approved` 행만 `data/schedule.json`에 동기화한다. `review`, `rejected`, `cancelled`는 노출하지 않는다.
+- 공연 회차는 `data/performances.json`에서 자동 합쳐지므로 일반 일정 JSON에 중복 입력하지 않는다.
+- 동기화 후 `npm run build`를 실행하고 데스크톱·모바일 월간 캘린더를 확인한다.
+- 카카오톡 일정 등록 웹훅은 `app/api/kakao/schedule/route.ts`, 파서는 `lib/kakao-schedule.ts`, Google Sheet 기록기는 `scripts/google-apps-script/Code.gs`에서 관리한다.
+- 카카오톡 봇 연결이나 환경 변수 변경 시 `docs/KAKAO_SCHEDULE_BOT_SETUP.md`를 함께 확인한다.
+- 공용 Google Calendar와 Sheet 동기화는 `docs/GOOGLE_CALENDAR_SYNC_SETUP.md`와 `scripts/google-apps-script/Code.gs`를 따른다.
 
 ## 음악 데이터 규칙
 
