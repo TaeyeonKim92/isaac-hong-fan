@@ -42,9 +42,11 @@ npm run build
 
 ## 음악 데이터 규칙
 
-- YouTube Music 웹 화면이나 비공개 내부 API를 파싱하지 않는다.
-- 최근 음악과 인기 음악은 기존 `YOUTUBE_API_KEY`를 사용하는 공식 YouTube Data API v3로 조회한다.
-- `@pngisacofficial` 공식 아티스트 채널의 업로드 중 YouTube 음악 카테고리 ID `10`만 사용한다.
-- `최근 음악`은 공개일순, `인기 음악`은 조회수순으로 계산한다.
+- 일반 업로드의 YouTube 음악 카테고리 ID `10`만으로 노래를 판별하지 않는다. 자체 콘텐츠도 음악 카테고리로 분류될 수 있다.
+- 발매작의 기준은 `https://www.youtube.com/@pngisacofficial/releases`의 선택된 Releases 탭이다.
+- Releases 탭에서는 `OLAK5uy_...` 발매 플레이리스트 ID만 수집하고, 실제 트랙과 조회수는 기존 `YOUTUBE_API_KEY`를 사용하는 공식 YouTube Data API v3로 조회한다.
+- Releases 탭을 읽지 못하면 일반 업로드로 대체하지 않고 음악 섹션을 숨긴다.
+- `최근 음악`은 Releases 플레이리스트 트랙의 공개일순, `인기 음악`은 조회수순으로 계산한다.
+- 음악 로직을 수정하거나 배포하기 전에는 `npm run check:youtube-releases`가 통과해야 한다.
 - 조회수 기반 목록을 YouTube Music 공식 차트라고 표현하지 않는다. 화면에는 `공식 채널 조회수 기준`을 명시한다.
 - 곡 링크는 `https://music.youtube.com/watch?v=VIDEO_ID` 형식으로 연결한다.

@@ -1,7 +1,6 @@
 const API_KEY = process.env.YOUTUBE_API_KEY!
 const YOUTUBE_CHANNEL_HANDLES = ['@pngisac-video', '@pngisacofficial']
-const OFFICIAL_ARTIST_HANDLE = '@pngisacofficial'
-const MUSIC_CATEGORY_ID = '10'
+const YOUTUBE_RELEASES_URL = 'https://www.youtube.com/@pngisacofficial/releases?hl=ko&gl=KR'
 
 export interface YouTubeChannel {
   title: string
@@ -104,39 +103,145 @@ export interface YouTubeMusicTracks {
   popular: YouTubeMusicTrack[]
 }
 
+interface YouTubeReleasePlaylist {
+  id: string
+  title: string
+}
+
+function extractAssignedJson(html: string, marker: string): any | null {
+  const markerIndex = html.indexOf(marker)
+  if (markerIndex < 0) return null
+
+  const start = html.indexOf('{', markerIndex + marker.length)
+  if (start < 0) return null
+
+  let depth = 0
+  let inString = false
+  let escaped = false
+
+  for (let index = start; index < html.length; index += 1) {
+    const char = html[index]
+
+    if (inString) {
+      if (escaped) escaped = false
+      else if (char === '\\') escaped = true
+      else if (char === '"') inString = false
+      continue
+    }
+
+    if (char === '"') inString = true
+    else if (char === '{') depth += 1
+    else if (char === '}') {
+      depth -= 1
+      if (depth === 0) {
+        try {
+          return JSON.parse(html.slice(start, index + 1))
+        } catch {
+          return null
+        }
+      }
+    }
+  }
+
+  return null
+}
+
+function getReleasePlaylists(html: string): YouTubeReleasePlaylist[] {
+  const initialData = extractAssignedJson(html, 'var ytInitialData = ')
+  const tabs = initialData?.contents?.twoColumnBrowseResultsRenderer?.tabs ?? []
+  const selectedContent = tabs.find((tab: any) => tab.tabRenderer?.selected)?.tabRenderer?.content
+  if (!selectedContent) return []
+
+  const playlists: YouTubeReleasePlaylist[] = []
+  const seen = new Set<string>()
+
+  function walk(value: any) {
+    if (!value || typeof value !== 'object') return
+    if (Array.isArray(value)) {
+      value.forEach(walk)
+      return
+    }
+
+    const playlist = value.playlistRenderer
+    if (playlist?.playlistId?.startsWith('OLAK5uy_') && !seen.has(playlist.playlistId)) {
+      seen.add(playlist.playlistId)
+      playlists.push({
+        id: playlist.playlistId,
+        title: playlist.title?.simpleText ?? '',
+      })
+    }
+
+    Object.values(value).forEach(walk)
+  }
+
+  walk(selectedContent)
+  return playlists
+}
+
+async function getReleaseVideoIds(playlists: YouTubeReleasePlaylist[]): Promise<string[]> {
+  const videoIds: string[] = []
+
+  for (let index = 0; index < playlists.length; index += 8) {
+    const chunk = playlists.slice(index, index + 8)
+    const results = await Promise.all(
+      chunk.map(async (playlist) => {
+        try {
+          const params = new URLSearchParams({
+            playlistId: playlist.id,
+            part: 'contentDetails',
+            maxResults: '50',
+            key: API_KEY,
+          })
+          const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?${params}`)
+          if (!response.ok) return []
+
+          const data = await response.json()
+          return (data.items ?? [])
+            .map((item: any) => item.contentDetails?.videoId)
+            .filter(Boolean)
+        } catch {
+          return []
+        }
+      }),
+    )
+    videoIds.push(...results.flat())
+  }
+
+  return Array.from(new Set(videoIds))
+}
+
 export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTracks> {
   try {
-    const channels = await getConfiguredChannels()
-    const officialChannel = channels.find((channel) => channel.handle === OFFICIAL_ARTIST_HANDLE)
-    if (!officialChannel) return { latest: [], popular: [] }
+    if (!API_KEY) return { latest: [], popular: [] }
 
-    const playlistParams = new URLSearchParams({
-      playlistId: officialChannel.uploadsPlaylistId,
-      part: 'contentDetails',
-      maxResults: '50',
-      key: API_KEY,
+    const releasesRes = await fetch(YOUTUBE_RELEASES_URL, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; IsaacHongFan/1.0)',
+        'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
+      },
     })
-    const playlistRes = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?${playlistParams}`)
-    if (!playlistRes.ok) return { latest: [], popular: [] }
+    if (!releasesRes.ok) return { latest: [], popular: [] }
 
-    const playlistData = await playlistRes.json()
-    const videoIds = (playlistData.items ?? [])
-      .map((item: any) => item.contentDetails?.videoId)
-      .filter(Boolean)
+    const releasePlaylists = getReleasePlaylists(await releasesRes.text())
+    if (releasePlaylists.length === 0) return { latest: [], popular: [] }
 
+    const videoIds = await getReleaseVideoIds(releasePlaylists)
     if (videoIds.length === 0) return { latest: [], popular: [] }
 
-    const videoParams = new URLSearchParams({
-      id: videoIds.join(','),
-      part: 'snippet,statistics',
-      key: API_KEY,
-    })
-    const videosRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?${videoParams}`)
-    if (!videosRes.ok) return { latest: [], popular: [] }
+    const videoDetails: any[] = []
+    for (let index = 0; index < videoIds.length; index += 50) {
+      const params = new URLSearchParams({
+        id: videoIds.slice(index, index + 50).join(','),
+        part: 'snippet,statistics',
+        key: API_KEY,
+      })
+      const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?${params}`)
+      if (!response.ok) continue
+      const data = await response.json()
+      videoDetails.push(...(data.items ?? []))
+    }
 
-    const videosData = await videosRes.json()
-    const musicVideos = (videosData.items ?? [])
-      .filter((video: any) => video.snippet?.categoryId === MUSIC_CATEGORY_ID)
+    const musicVideos = videoDetails
       .map((video: any) => {
         const viewCountValue = Number(video.statistics?.viewCount ?? 0)
         return {
