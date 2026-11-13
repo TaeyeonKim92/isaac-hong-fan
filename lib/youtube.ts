@@ -233,6 +233,7 @@ export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTrac
       const params = new URLSearchParams({
         id: videoIds.slice(index, index + 50).join(','),
         part: 'snippet,statistics',
+        hl: 'ko',
         key: API_KEY,
       })
       const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?${params}`)
@@ -246,7 +247,7 @@ export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTrac
         const viewCountValue = Number(video.statistics?.viewCount ?? 0)
         return {
           id: video.id,
-          title: video.snippet?.title ?? '',
+          title: video.snippet?.localized?.title ?? video.snippet?.title ?? '',
           thumbnailUrl:
             video.snippet?.thumbnails?.medium?.url
             ?? video.snippet?.thumbnails?.default?.url
@@ -254,7 +255,7 @@ export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTrac
           publishedAt: video.snippet?.publishedAt ?? '',
           viewCount: viewCountValue.toLocaleString('ko-KR'),
           viewCountValue,
-          url: `https://music.youtube.com/watch?v=${video.id}`,
+          url: `https://www.youtube.com/watch?v=${video.id}`,
         }
       })
       .filter((video: any) => video.id && video.title && video.publishedAt)

@@ -49,4 +49,5 @@ npm run build
 - `최근 음악`은 Releases 플레이리스트 트랙의 공개일순, `인기 음악`은 조회수순으로 계산한다.
 - 음악 로직을 수정하거나 배포하기 전에는 `npm run check:youtube-releases`가 통과해야 한다.
 - 조회수 기반 목록을 YouTube Music 공식 차트라고 표현하지 않는다. 화면에는 `공식 채널 조회수 기준`을 명시한다.
-- 곡 링크는 `https://music.youtube.com/watch?v=VIDEO_ID` 형식으로 연결한다.
+- 곡 제목은 YouTube Data API에 `hl=ko`를 지정해 공식 한국어 현지화 제목을 우선한다. 현지화 제목이 없으면 원문을 유지하며 임의 번역하지 않는다.
+- 개별 곡 링크는 무료 계정에서도 열리는 `https://www.youtube.com/watch?v=VIDEO_ID` 형식으로 연결한다. 상단 아티스트 버튼만 YouTube Music을 사용한다.

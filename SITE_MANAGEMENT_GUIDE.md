@@ -187,7 +187,8 @@ public/images/
 - `최근 음악`은 발매 트랙의 공개일순, `인기 음악`은 조회수순이다. YouTube Music 자체 차트는 아니다.
 - Releases 탭 구조를 읽지 못하면 일반 업로드로 대체하지 않고 음악 섹션을 숨긴다.
 - 배포 전 `npm run check:youtube-releases`로 Releases 구조와 발매 플레이리스트 추출을 검증한다.
-- 음악 항목은 `music.youtube.com/watch?v=...`로 연결한다.
+- YouTube Data API 요청에 `hl=ko`를 지정해 업로더가 등록한 공식 한국어 현지화 제목을 우선한다. 값이 없으면 원문 제목을 유지한다.
+- 개별 음악 항목은 무료 계정에서도 재생 가능한 `youtube.com/watch?v=...`로 연결하고, 상단 아티스트 버튼만 YouTube Music으로 연결한다.
 - `YOUTUBE_API_KEY`와 일일 API 할당량이 필요하다.
 
 ### Instagram Graph API
