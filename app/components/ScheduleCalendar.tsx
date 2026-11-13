@@ -86,9 +86,13 @@ function EventLink({ event, compact = false }: { event: ScheduleEvent; compact?:
 }
 
 export default function ScheduleCalendar({ events }: { events: ScheduleEvent[] }) {
-  const firstDate = events[0] ? parseDate(events[0].date) : new Date()
-  const [monthCursor, setMonthCursor] = useState(() => new Date(firstDate.getFullYear(), firstDate.getMonth(), 1))
-  const [selectedDate, setSelectedDate] = useState(events[0]?.date || dateKey(new Date()))
+  const today = new Date()
+  const currentMonthEvent = events.find((event) => {
+    const date = parseDate(event.date)
+    return date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth()
+  })
+  const [monthCursor, setMonthCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
+  const [selectedDate, setSelectedDate] = useState(currentMonthEvent?.date || dateKey(today))
 
   const eventsByDate = useMemo(() => {
     const grouped = new Map<string, ScheduleEvent[]>()
