@@ -217,6 +217,16 @@ public/images/
 - `npm run check:performances`는 회차 누락, 날짜 범위, 중복 회차, 검색 결과 URL, 직접 예매 링크 상태와 아티스트 일치 여부를 검사한다.
 - 공식 상품이 아직 열리지 않았으면 검색 URL을 넣지 않고 `bookingStatus: upcoming`, 빈 `bookingUrl`, 공식 `sourceUrl`로 보류한다.
 
+### 공식 Instagram 일정 수신함
+
+- Meta API 없이 공식 Instagram을 1차 출처로 사용한다.
+- 사용자가 로그인된 브라우저 탭, 게시물 URL 또는 포스터 이미지를 제공하면 에이전트가 캡션과 이미지 문자를 읽는다.
+- 추출 결과는 Google Drive의 `홍이삭 공식 일정 관리` 시트에 회차별 한 행으로 기록한다.
+- 신규 후보는 `review`, 공식 출처로 확인된 일정은 `approved`, 취소 일정은 `cancelled`로 관리한다.
+- 시트에는 원본 Instagram URL, 교차 확인 출처, 확인일, 신뢰도와 중복 방지 ID를 함께 저장한다.
+- 운영 규칙과 정확한 열 계약은 `SCHEDULE_AGENT.md`를 따른다.
+- 향후 사이트 캘린더는 `approved` 행만 읽도록 연결한다. 현재는 검수·승인용 기준 데이터 단계다.
+
 ### Google News RSS
 
 - `홍이삭`으로 Google News 한국어 RSS를 검색한다.
