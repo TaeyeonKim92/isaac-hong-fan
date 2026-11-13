@@ -1,46 +1,46 @@
-# EP `결` 비주얼 개편 Design QA
+# EP `결` 흑백 사진 히어로 Design QA
 
-- source visual truth: `C:\Users\daint\Downloads\결 앨범 이미지.jpeg` (550 × 550 px), `C:\Users\daint\Downloads\홍이삭 결 프로필.png` (1440 × 1080 px)
-- implementation: `http://localhost:3001/`
-- implementation screenshots:
-  - `docs/qa/gyeol-hero-2026-11-13/desktop-1440x900.png`
-  - `docs/qa/gyeol-hero-2026-11-13/mobile-narrow-final.png`
-  - `docs/qa/gyeol-hero-2026-11-13/source-vs-implementation.png`
-- desktop viewport: 1440 × 900 CSS px, device scale factor 1
-- source/implementation comparison pixels: 550 × 550 source normalized to 900 × 900 beside a 1440 × 900 implementation capture; combined image 2340 × 900
-- mobile evidence: 390 × 844 output crop. Headless Edge enforces a wider minimum layout viewport, so this capture is supporting narrow-layout evidence rather than a pixel-perfect 390 CSS px comparison.
+- source visual truth: `C:\Users\daint\Downloads\결 배경.png` (1440 × 1080 px)
+- implementation: `http://localhost:3001/?revision=photo-hero`
+- implementation screenshot: `docs/qa/gyeol-hero-2026-11-13/desktop-photo-hero.png`
+- combined comparison: `docs/qa/gyeol-hero-2026-11-13/source-vs-photo-hero.png`
+- viewport: 1440 × 900 CSS px, device scale factor 1
+- comparison pixels: 1440 × 1080 source normalized to 1200 × 900 beside a 1440 × 900 implementation capture; combined image 2640 × 900
 - state: home hero, unscrolled; local development build
 
 ## Findings
 
 No actionable P0/P1/P2 findings remain.
 
-- Typography: the existing Isaac Hong logotype remains the primary display mark. Small uppercase labels use the established Inter letter spacing and maintain readable optical weight against the dark gradient.
-- Spacing and layout rhythm: the album art remains dominant, the duplicated upper crop reads as a deliberate ribbon below the fixed navigation, and the hero controls stay grouped in the lower safe area.
-- Colors and tokens: navigation, accent, borders, background, and card tokens now derive from the album art's deep red, ink black, gray paper, and ivory tones.
-- Image quality: both supplied source assets are used directly. The hero uses the album cover without reconstructed graphics; the profile uses the supplied 4:3 photograph without portrait cropping.
-- Copy/content: `7th EP · GYEOL` identifies the campaign while official and personal channel labels retain their previous meaning.
+- Typography: the existing Isaac Hong logotype is rendered in white over the dark lower half of the image. Small uppercase labels preserve the established wide letter spacing and remain legible.
+- Spacing and layout rhythm: the fixed red navigation remains visually separate. The campaign label, artist mark, official links, and personal links form a centered stack in the lower safe area without covering the face.
+- Colors and tokens: the red navigation and Instagram button carry the `결` campaign accent into the monochrome composition. White controls use translucent borders to avoid a heavy boxed appearance.
+- Image quality: the supplied 1440 × 1080 source is used directly as a full-bleed hero with `object-cover`. The focal point keeps the face and diagonal light geometry visible at the desktop reference viewport.
+- Copy/content: `7th EP · GYEOL`, the artist name, five official links, and two personal links are all placed on the photo as requested. The separate profile/About section remains removed.
+
+## Full-view comparison evidence
+
+`source-vs-photo-hero.png` shows the source and browser implementation together. The implementation preserves the silhouette, diagonal windows, and high-contrast black-and-white art direction while adding only the requested navigation and channel UI.
 
 ## Focused comparison evidence
 
-The combined comparison verifies the album's red band, black type, monochrome double-profile, and paper texture are preserved in the hero. A separate focused crop was not required because these elements and the complete control group are legible in the 1440 × 900 full-view comparison. The profile asset was checked at its native 4:3 ratio in the implemented component.
+No extra focused crop was needed because the face, full artist mark, button labels, and photo geometry are all legible in the combined 900px-high comparison.
 
 ## Comparison history
 
-1. Initial desktop pass: composition, palette, and source-image fidelity passed. The full album art and the repeated red ribbon were both visible.
-2. Initial narrow pass: the five official-channel controls could extend beyond the visible right edge in a narrow capture (P2).
-3. Fix: each official-channel control now uses a two-column mobile basis with reduced horizontal padding and returns to content-width buttons at `sm` and above.
-4. Post-fix evidence: `mobile-narrow-final.png` shows the controls arranged as two columns plus a centered final Melon control; source image and hero identity remain intact.
+1. Earlier attempts used the square album cover as an enlarged or poster-scale hero. User feedback showed that this did not produce the intended landing composition (P1).
+2. Fix: replaced the hero source with the supplied black-and-white concept photo, retained the red navigation, and moved the artist name and all channel links onto the image.
+3. Post-fix evidence: the browser screenshot shows the full viewport hero, readable overlays, an unobscured face, and no separate profile section.
 
 ## Interaction and runtime checks
 
-- Browser-rendered in the in-app browser at `http://localhost:3001/`.
-- Verified navigation links, external-channel link labels, album cards, schedule calendar, and profile image are present in the accessibility tree.
+- Browser-rendered in the in-app browser at the local preview URL.
+- Verified navigation, all official/personal channel links, album section, schedule, and news remain present in the accessibility tree.
 - Development server and production build reported no runtime or compilation errors.
 - `npm run check:youtube-releases` and `npm run build` passed.
 
 ## Follow-up polish
 
-- P3: after the EP campaign ends, consider restoring a less release-specific hero while retaining the `결` palette as an archived seasonal theme.
+- P3: mobile browsers with very tall aspect ratios will crop more of the left window light because the source is landscape; the central face remains the responsive focal point.
 
 final result: passed

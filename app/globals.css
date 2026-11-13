@@ -19,34 +19,6 @@ body {
   color: var(--text);
 }
 
-.gyeol-hero-art {
-  background-position: center 20%;
-  background-repeat: no-repeat;
-  background-size: cover;
-  filter: saturate(0.92) contrast(1.04);
-  transform: scale(1.012);
-}
-
-.gyeol-hero-ribbon {
-  background-position: center top;
-  background-repeat: no-repeat;
-  background-size: cover;
-  mix-blend-mode: multiply;
-}
-
-@media (max-width: 640px) {
-  .gyeol-hero-art {
-    background-color: var(--gyeol-red);
-    background-position: center 5.25rem;
-    background-size: 100% auto;
-    transform: none;
-  }
-
-  .gyeol-hero-ribbon {
-    background-size: 125% auto;
-  }
-}
-
 @layer components {
   .card {
     background: var(--card);

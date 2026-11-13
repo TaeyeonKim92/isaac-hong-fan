@@ -4,7 +4,6 @@ import Image from 'next/image'
 import AlbumCarousel from './components/AlbumCarousel'
 import VideoCarousel from './components/VideoCarousel'
 import ScheduleCalendar from './components/ScheduleCalendar'
-import { getArtistInfo } from '@/lib/lastfm'
 import { getInstagramPosts, formatInstagramDate } from '@/lib/instagram'
 import { getLatestVideos, getYouTubeMusicTracks } from '@/lib/youtube'
 import { getNewsArticles, formatNewsDate } from '@/lib/news'
@@ -29,8 +28,7 @@ function readImages(folder: string): string[] {
 }
 
 export default async function Home() {
-  const [artist, youtubeMusic, instagramPosts, videos, news, performances] = await Promise.all([
-    getArtistInfo(),
+  const [youtubeMusic, instagramPosts, videos, news, performances] = await Promise.all([
     getYouTubeMusicTracks(5),
     getInstagramPosts(3),
     getLatestVideos(50),
@@ -41,10 +39,8 @@ export default async function Home() {
   // 로컬 이미지 폴더 스캔 (빌드 시 실행)
   const heroImages = readImages('hero')     // 히어로 배경 — 가로 사진
   const galleryImages = readImages('gallery') // 갤러리 — 여러 장
-  const profileImages = readImages('profile') // 프로필 — 세로 사진
 
-  const heroBg = heroImages[0] ?? null
-  const profileSrc = profileImages[0] ?? null
+  const heroBg = heroImages.find((src) => src.includes('gyeol-background')) ?? heroImages[0] ?? null
   const scheduleEvents = getScheduleEvents(performances)
   const albums = youtubeMusic.releases
 
@@ -53,34 +49,32 @@ export default async function Home() {
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section
         id="home"
-        className="relative min-h-screen flex flex-col items-center justify-end overflow-hidden bg-[#171111]"
+        className="relative flex min-h-screen items-end overflow-hidden bg-[#151515] pt-16"
       >
-        {/* EP <결> 커버를 전체 배경과 상단 리본에 겹쳐 사용 */}
         {heroBg && (
-          <>
-            <div
-              className="gyeol-hero-art absolute inset-0 pointer-events-none"
-              style={{ backgroundImage: `url('${heroBg}')` }}
-            />
-            <div
-              className="gyeol-hero-ribbon absolute inset-x-0 top-16 h-28 pointer-events-none opacity-90 md:h-36"
-              style={{ backgroundImage: `url('${heroBg}')` }}
-            />
-          </>
+          <Image
+            src={heroBg}
+            alt="EP 결 콘셉트 사진 속 홍이삭"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-[50%_46%]"
+          />
         )}
 
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, rgba(75,14,13,0.02) 0%, rgba(20,14,14,0.08) 42%, rgba(15,10,10,0.82) 78%, rgba(10,7,7,0.96) 100%)',
+              'linear-gradient(180deg, rgba(10,10,10,0.04) 22%, rgba(10,10,10,0.18) 52%, rgba(10,10,10,0.88) 100%)',
           }}
+          aria-hidden="true"
         />
 
-        {/* 본문 */}
-        <div className="relative z-10 w-full max-w-6xl px-6 pb-24 pt-52 text-center text-[#f3eee8] md:px-10 md:pb-20">
+        {/* 사진 위 채널 영역 */}
+        <div className="relative z-10 w-full px-6 pb-12 pt-48 text-center text-[#f3eee8] md:px-10 md:pb-14">
           <p
-            className="mb-5 text-[10px] tracking-[0.45em] uppercase text-[#e0c2bd]"
+            className="mb-5 text-[10px] tracking-[0.45em] uppercase text-[#d9b8b3]"
           >
             7th EP &middot; GYEOL
           </p>
@@ -89,12 +83,12 @@ export default async function Home() {
           <img
             src="/images/logo/isaac-hong-logo.png"
             alt=""
-            className="mx-auto mb-8 w-[min(62vw,26rem)] brightness-0 invert"
+            className="mx-auto mb-8 w-[min(66vw,26rem)] brightness-0 invert"
           />
 
           {/* 공식 채널 */}
           <p
-            className="mb-4 text-[9px] tracking-[0.32em] uppercase text-[#c9aaa5]"
+            className="mb-4 text-[9px] tracking-[0.32em] uppercase text-white/65"
           >
             Official Channels
           </p>
@@ -113,7 +107,7 @@ export default async function Home() {
               target="_blank"
               rel="noopener noreferrer"
               className="basis-[calc(50%-0.375rem)] px-3 py-2.5 text-[10px] tracking-[0.2em] uppercase border transition-all hover:opacity-70 sm:basis-auto sm:px-7 sm:text-[11px] sm:tracking-[0.25em]"
-              style={{ borderColor: 'rgba(243,238,232,0.55)', color: 'var(--gyeol-ivory)' }}
+              style={{ borderColor: 'rgba(255,255,255,0.58)', color: 'var(--gyeol-ivory)' }}
             >
               YouTube
             </a>
@@ -122,7 +116,7 @@ export default async function Home() {
               target="_blank"
               rel="noopener noreferrer"
               className="basis-[calc(50%-0.375rem)] px-3 py-2.5 text-[10px] tracking-[0.18em] uppercase border transition-all hover:opacity-70 sm:basis-auto sm:px-7 sm:text-[11px] sm:tracking-[0.25em]"
-              style={{ borderColor: 'rgba(243,238,232,0.55)', color: 'var(--gyeol-ivory)' }}
+              style={{ borderColor: 'rgba(255,255,255,0.58)', color: 'var(--gyeol-ivory)' }}
             >
               YouTube Music
             </a>
@@ -131,7 +125,7 @@ export default async function Home() {
               target="_blank"
               rel="noopener noreferrer"
               className="basis-[calc(50%-0.375rem)] px-3 py-2.5 text-[10px] tracking-[0.2em] uppercase border transition-all hover:opacity-70 sm:basis-auto sm:px-7 sm:text-[11px] sm:tracking-[0.25em]"
-              style={{ borderColor: 'rgba(243,238,232,0.55)', color: 'var(--gyeol-ivory)' }}
+              style={{ borderColor: 'rgba(255,255,255,0.58)', color: 'var(--gyeol-ivory)' }}
             >
               Spotify
             </a>
@@ -140,7 +134,7 @@ export default async function Home() {
               target="_blank"
               rel="noopener noreferrer"
               className="basis-[calc(50%-0.375rem)] px-3 py-2.5 text-[10px] tracking-[0.2em] uppercase border transition-all hover:opacity-70 sm:basis-auto sm:px-7 sm:text-[11px] sm:tracking-[0.25em]"
-              style={{ borderColor: 'rgba(243,238,232,0.55)', color: 'var(--gyeol-ivory)' }}
+              style={{ borderColor: 'rgba(255,255,255,0.58)', color: 'var(--gyeol-ivory)' }}
             >
               Melon
             </a>
@@ -149,7 +143,7 @@ export default async function Home() {
           {/* 개인 채널 */}
           <div
             className="mt-5 flex items-center justify-center gap-x-4 gap-y-2 flex-wrap text-[10px] tracking-[0.22em] uppercase"
-            style={{ color: '#bfa5a1' }}
+            style={{ color: 'rgba(255,255,255,0.62)' }}
           >
             <a
               href="https://youtube.com/@pngisac-video"
@@ -171,56 +165,10 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* 스크롤 인디케이터 */}
-        <div
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-          style={{ color: '#d7bbb7' }}
-        >
-          <div className="w-px h-14 opacity-30" style={{ background: 'var(--muted)' }} />
-          <span className="text-[10px] tracking-[0.35em] uppercase opacity-50">Scroll</span>
-        </div>
       </section>
 
-      {/* ── 프로필 + 앨범 ────────────────────────────────────────── */}
+      {/* ── 앨범 ─────────────────────────────────────────────────── */}
       <div className="max-w-6xl mx-auto px-6 md:px-10">
-
-        {/* 프로필 (public/images/profile/ 에 사진 넣으면 표시) */}
-        {profileSrc && (
-          <section className="py-20 grid gap-10 items-center md:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)] md:gap-14">
-            <div className="w-full">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#d8d5cf]">
-                <Image
-                  src={profileSrc}
-                  alt="EP 결 프로필 사진 속 홍이삭"
-                  fill
-                  priority
-                  className="object-cover object-center"
-                />
-              </div>
-            </div>
-            <div>
-              <p className="text-[11px] tracking-[0.35em] uppercase mb-3" style={{ color: 'var(--muted)' }}>
-                About
-              </p>
-              <h2
-                className="font-bold italic mb-5"
-                style={{
-                  fontFamily: 'var(--font-playfair), serif',
-                  fontSize: '2.5rem',
-                  color: 'var(--text)',
-                }}
-              >
-                Isaac Hong
-              </h2>
-              {artist?.bio && (
-                <p className="leading-relaxed" style={{ color: 'var(--muted)', maxWidth: '36rem' }}>
-                  {artist.bio}…
-                </p>
-              )}
-            </div>
-          </section>
-        )}
-
         {/* YouTube 공식 아티스트 채널 Releases 기반 발매 목록 */}
         <section id="albums" className="scroll-mt-16 py-20 border-t" style={{ borderColor: 'var(--border)' }}>
           <div className="flex flex-wrap items-baseline justify-between gap-3">
