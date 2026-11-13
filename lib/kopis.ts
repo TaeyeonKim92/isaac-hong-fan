@@ -1,23 +1,15 @@
+import curatedPerformances from '@/data/performances.json'
+
 const API_KEY = process.env.KOPIS_API_KEY?.trim()
 const BASE = 'http://www.kopis.or.kr/openApi/restful'
 const POPULAR_MUSIC_GENRE_CODE = process.env.KOPIS_POPULAR_MUSIC_GENRE_CODE?.trim() || 'CCCD'
 const CAST_SCAN_PAGES = Number(process.env.KOPIS_CAST_SCAN_PAGES || '2')
 
-const MANUAL_PERFORMANCES: KopisPerformance[] = [
-  {
-    id: 'manual-the-player-season-3-2026',
-    title: 'THE PLAYER Season 3, LUCY X 홍이삭',
-    venue: 'KBS스포츠월드(아레나)',
-    startDate: '2026.07.18',
-    endDate: '2026.07.19',
-    genre: '대중음악',
-    state: '공연예정',
-    posterUrl: '',
-    detailUrl: 'https://www.ticketlink.co.kr/search?query=THE+PLAYER+Season+3',
-    bookingName: '티켓링크',
-    bookingUrl: 'https://www.ticketlink.co.kr/search?query=THE+PLAYER+Season+3',
-  },
-]
+export interface PerformanceScheduleItem {
+  date: string
+  day: string
+  time: string
+}
 
 export interface KopisPerformance {
   id: string
@@ -31,7 +23,17 @@ export interface KopisPerformance {
   detailUrl: string
   bookingName: string
   bookingUrl: string
+  schedule?: PerformanceScheduleItem[]
+  sourceName?: string
+  sourceUrl?: string
+  verifiedAt?: string
+  bookingStatus?: string
 }
+
+const MANUAL_PERFORMANCES: KopisPerformance[] = curatedPerformances.map((performance) => ({
+  ...performance,
+  detailUrl: performance.bookingUrl || performance.sourceUrl,
+}))
 
 function parseDate(dateText: string): string {
   const digits = dateText.replace(/\D/g, '')
@@ -168,19 +170,21 @@ async function getBookingInfo(id: string, title: string): Promise<{ bookingName:
     const xml = await res.text()
     const relates = extractXmlBlocks(xml, 'relate')
 
-    for (const relate of relates) {
-      const bookingName = extractXmlValue(relate, 'relatenm')
-      const searchUrl = buildBookingSearchUrl(bookingName, title)
-      if (bookingName && searchUrl) {
-        return { bookingName, bookingUrl: searchUrl }
-      }
-    }
-
+    // KOPIS가 실제 예매 상품 URL을 제공하면 검색 페이지보다 우선한다.
     for (const relate of relates) {
       const bookingName = extractXmlValue(relate, 'relatenm')
       const relateUrl = extractXmlValue(relate, 'relateurl')
       if (bookingName && isUsableBookingUrl(relateUrl)) {
         return { bookingName, bookingUrl: relateUrl }
+      }
+    }
+
+    // 직접 링크가 없거나 오래된 공지 링크인 경우에만 예매처 검색으로 대체한다.
+    for (const relate of relates) {
+      const bookingName = extractXmlValue(relate, 'relatenm')
+      const searchUrl = buildBookingSearchUrl(bookingName, title)
+      if (bookingName && searchUrl) {
+        return { bookingName, bookingUrl: searchUrl }
       }
     }
   } catch {
@@ -226,6 +230,21 @@ function getManualUpcomingPerformances() {
   return MANUAL_PERFORMANCES.filter((performance) => performance.endDate >= todayText)
 }
 
+function normalizePerformanceTitle(title: string) {
+  return title
+    .toLowerCase()
+    .replace(/20\d{2}/g, '')
+    .replace(/[^0-9a-z가-힣]/gi, '')
+}
+
+function isSamePerformance(a: KopisPerformance, b: KopisPerformance) {
+  if (a.startDate !== b.startDate || a.endDate !== b.endDate) return false
+
+  const aTitle = normalizePerformanceTitle(a.title)
+  const bTitle = normalizePerformanceTitle(b.title)
+  return aTitle.includes(bTitle) || bTitle.includes(aTitle)
+}
+
 export async function getUpcomingPerformances(artistName = '홍이삭'): Promise<KopisPerformance[]> {
   const manualPerformances = getManualUpcomingPerformances()
   if (!API_KEY) return manualPerformances
@@ -233,7 +252,6 @@ export async function getUpcomingPerformances(artistName = '홍이삭'): Promise
   try {
     const { stdate, eddate } = getDateRange()
     const found = new Map<string, Omit<KopisPerformance, 'detailUrl' | 'bookingName' | 'bookingUrl'>>()
-    const manualByTitle = new Set(manualPerformances.map((item) => `${item.title}-${item.startDate}`))
 
     const directResults = await fetchPerformanceList({
       stdate,
@@ -285,7 +303,9 @@ export async function getUpcomingPerformances(artistName = '홍이삭'): Promise
 
     const merged = [
       ...manualPerformances,
-      ...performances.filter((item) => !manualByTitle.has(`${item.title}-${item.startDate}`)),
+      ...performances.filter((item) =>
+        !manualPerformances.some((manual) => isSamePerformance(manual, item)),
+      ),
     ]
 
     return sortPerformances(merged)

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "manual-gyeol-2026",
+    "artist": "홍이삭",
+    "title": "2026 홍이삭 소극장 콘서트 〈결〉",
+    "venue": "이화여자대학교 ECC 영산극장",
+    "startDate": "2026.12.11",
+    "endDate": "2026.12.27",
+    "genre": "대중음악",
+    "state": "공연예정",
+    "posterUrl": "",
+    "bookingName": "티켓링크",
+    "bookingStatus": "on-sale",
+    "bookingUrl": "https://www.ticketlink.co.kr/product/66486",
+    "sourceName": "티켓링크 공식 티켓오픈 공지",
+    "sourceUrl": "https://www.ticketlink.co.kr/help/notice/66297",
+    "verifiedAt": "2026-11-13",
+    "schedule": [
+      { "date": "2026.12.11", "day": "금", "time": "20:00" },
+      { "date": "2026.12.12", "day": "토", "time": "17:00" },
+      { "date": "2026.12.18", "day": "금", "time": "20:00" },
+      { "date": "2026.12.19", "day": "토", "time": "17:00" },
+      { "date": "2026.12.20", "day": "일", "time": "17:00" },
+      { "date": "2026.12.24", "day": "목", "time": "20:00" },
+      { "date": "2026.12.25", "day": "금", "time": "17:00" },
+      { "date": "2026.12.26", "day": "토", "time": "17:00" },
+      { "date": "2026.12.27", "day": "일", "time": "17:00" }
+    ]
+  }
+]

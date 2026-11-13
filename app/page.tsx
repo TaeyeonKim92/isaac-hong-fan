@@ -95,25 +95,31 @@ export default async function Home() {
             className="mx-auto mb-12 w-[min(68vw,34rem)]"
           />
 
-          {/* 링크 버튼 */}
+          {/* 공식 채널 */}
+          <p
+            className="text-[10px] tracking-[0.32em] uppercase mb-4"
+            style={{ color: 'var(--muted)' }}
+          >
+            Official Channels
+          </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <a
-              href="https://youtube.com/@pngisacofficial"
+              href="https://www.instagram.com/hongisaac_official/"
               target="_blank"
               rel="noopener noreferrer"
               className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase transition-opacity hover:opacity-70"
               style={{ background: 'var(--text)', color: 'var(--bg)' }}
             >
-              Official
+              Instagram
             </a>
             <a
-              href="https://youtube.com/@pngisac-video"
+              href="https://youtube.com/@pngisacofficial"
               target="_blank"
               rel="noopener noreferrer"
               className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase border transition-all hover:opacity-70"
               style={{ borderColor: 'var(--text)', color: 'var(--text)' }}
             >
-              Videos
+              YouTube
             </a>
             <a
               href="https://open.spotify.com/search/%ED%99%8D%EC%9D%B4%EC%82%AD/artists"
@@ -133,17 +139,30 @@ export default async function Home() {
             >
               Melon
             </a>
-            {artist?.url && (
-              <a
-                href={artist.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase border transition-all hover:opacity-70"
-                style={{ borderColor: 'var(--text)', color: 'var(--text)' }}
-              >
-                Last.fm
-              </a>
-            )}
+          </div>
+
+          {/* 개인 채널 */}
+          <div
+            className="mt-5 flex items-center justify-center gap-x-4 gap-y-2 flex-wrap text-[10px] tracking-[0.22em] uppercase"
+            style={{ color: 'var(--muted)' }}
+          >
+            <a
+              href="https://youtube.com/@pngisac-video"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-60"
+            >
+              Vlog YouTube
+            </a>
+            <span aria-hidden="true" className="opacity-40">&middot;</span>
+            <a
+              href="https://www.instagram.com/pngisac/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-60"
+            >
+              Personal Instagram
+            </a>
           </div>
         </div>
 
@@ -206,7 +225,18 @@ export default async function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-14">
               {tracks.length > 0 && (
                 <div>
-                  <h2 className="section-title">인기 트랙</h2>
+                  <div className="flex items-baseline justify-between gap-4">
+                    <h2 className="section-title">인기 트랙</h2>
+                    <a
+                      href={artist?.url ?? 'https://www.last.fm/music/Isaac+Hong'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mb-2 shrink-0 text-[10px] tracking-[0.18em] uppercase transition-opacity hover:opacity-60"
+                      style={{ color: 'var(--muted)' }}
+                    >
+                      View on Last.fm &rarr;
+                    </a>
+                  </div>
                   <div className="section-line" />
                   {tracks.map((track, i) => (
                     <a
@@ -454,39 +484,58 @@ export default async function Home() {
                 href={perf.detailUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-8 py-5 border-b group"
+                className="block py-5 border-b group"
                 style={{ borderColor: 'var(--border)' }}
               >
-                <div className="shrink-0 w-20 text-center">
-                  <p className="text-[11px] tracking-widest" style={{ color: 'var(--muted)' }}>
-                    {perf.startDate.slice(0, 7)}
-                  </p>
-                  <p
-                    className="text-3xl font-bold tabular-nums"
-                    style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--text)' }}
-                  >
-                    {perf.startDate.slice(8)}
-                  </p>
+                <div className="flex items-center gap-5 sm:gap-8">
+                  <div className="shrink-0 w-20 text-center">
+                    <p className="text-[11px] tracking-widest" style={{ color: 'var(--muted)' }}>
+                      {perf.startDate.slice(0, 7)}
+                    </p>
+                    <p
+                      className="text-3xl font-bold tabular-nums"
+                      style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--text)' }}
+                    >
+                      {perf.startDate.slice(8)}
+                    </p>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="font-medium group-hover:opacity-60 transition-opacity"
+                      style={{ color: 'var(--text)' }}
+                    >
+                      {perf.title}
+                    </p>
+                    <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>
+                      {perf.venue}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className={`badge ${perf.state === '공연중' ? '!bg-green-50 !text-green-700' : ''}`}>
+                      {perf.bookingName || perf.state}
+                    </span>
+                    <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
+                      {perf.schedule ? `${perf.schedule.length}회 공연` : `~${perf.endDate}`}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p
-                    className="font-medium group-hover:opacity-60 transition-opacity"
-                    style={{ color: 'var(--text)' }}
-                  >
-                    {perf.title}
-                  </p>
-                  <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>
-                    {perf.venue}
-                  </p>
-                </div>
-                <div className="text-right shrink-0">
-                  <span className={`badge ${perf.state === '공연중' ? '!bg-green-50 !text-green-700' : ''}`}>
-                    {perf.bookingName || perf.state}
-                  </span>
-                  <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
-                    ~{perf.endDate}
-                  </p>
-                </div>
+
+                {perf.schedule && perf.schedule.length > 0 && (
+                  <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:ml-28">
+                    {perf.schedule.map((show) => (
+                      <div
+                        key={`${perf.id}-${show.date}`}
+                        className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 transition-colors group-hover:bg-white/40"
+                        style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+                      >
+                        <span className="text-xs tabular-nums">
+                          {show.date.slice(5)} <span style={{ color: 'var(--muted)' }}>({show.day})</span>
+                        </span>
+                        <span className="text-xs font-semibold tabular-nums">{show.time}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </a>
             ))}
           </section>
