@@ -311,12 +311,8 @@ export default async function Home() {
                       >
                         {track.title}
                       </p>
-                      <span className="text-sm shrink-0" style={{ color: 'var(--muted)' }}>
-                        {new Date(track.publishedAt).toLocaleDateString('ko-KR', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
+                      <span className="max-w-44 truncate text-right text-sm shrink-0" style={{ color: 'var(--muted)' }}>
+                        {track.releaseTitle}
                       </span>
                     </a>
                   ))}

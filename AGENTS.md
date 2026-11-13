@@ -46,7 +46,8 @@ npm run build
 - 발매작의 기준은 `https://www.youtube.com/@pngisacofficial/releases`의 선택된 Releases 탭이다.
 - Releases 탭에서는 `OLAK5uy_...` 발매 플레이리스트 ID만 수집하고, 실제 트랙과 조회수는 기존 `YOUTUBE_API_KEY`를 사용하는 공식 YouTube Data API v3로 조회한다.
 - Releases 탭을 읽지 못하면 일반 업로드로 대체하지 않고 음악 섹션을 숨긴다.
-- `최근 음악`은 Releases 플레이리스트 트랙의 공개일순, `인기 음악`은 조회수순으로 계산한다.
+- `최근 음악`은 영상 업로드일이 아니라 Releases 탭의 공식 발매 목록 순서와 앨범 내 트랙 순서로 계산한다. 유통사 이전으로 오래된 음원이 다시 업로드될 수 있으므로 `snippet.publishedAt`을 발매일로 사용하지 않는다.
+- 최근 음악의 오른쪽에는 잘못된 업로드 날짜 대신 발매 앨범명을 표시한다. `인기 음악`은 조회수순으로 계산한다.
 - 음악 로직을 수정하거나 배포하기 전에는 `npm run check:youtube-releases`가 통과해야 한다.
 - 조회수 기반 목록을 YouTube Music 공식 차트라고 표현하지 않는다. 화면에는 `공식 채널 조회수 기준`을 명시한다.
 - 곡 제목은 YouTube Data API에 `hl=ko`를 지정해 공식 한국어 현지화 제목을 우선한다. 현지화 제목이 없으면 원문을 유지하며 임의 번역하지 않는다.

@@ -96,6 +96,7 @@ export interface YouTubeMusicTrack {
   title: string
   thumbnailUrl: string
   publishedAt: string
+  releaseTitle: string
   viewCount: string
   url: string
 }
@@ -114,6 +115,13 @@ const verifiedMusicTitles = musicTitleOverrides as Record<string, {
 interface YouTubeReleasePlaylist {
   id: string
   title: string
+}
+
+interface YouTubeReleaseVideo {
+  id: string
+  releaseTitle: string
+  releaseRank: number
+  trackRank: number
 }
 
 function extractAssignedJson(html: string, marker: string): any | null {
@@ -170,12 +178,12 @@ function getReleasePlaylists(html: string): YouTubeReleasePlaylist[] {
       return
     }
 
-    const playlist = value.playlistRenderer
+    const playlist = value.compactPlaylistRenderer ?? value.playlistRenderer
     if (playlist?.playlistId?.startsWith('OLAK5uy_') && !seen.has(playlist.playlistId)) {
       seen.add(playlist.playlistId)
       playlists.push({
         id: playlist.playlistId,
-        title: playlist.title?.simpleText ?? '',
+        title: playlist.title?.simpleText ?? playlist.title?.runs?.[0]?.text ?? '',
       })
     }
 
@@ -186,13 +194,13 @@ function getReleasePlaylists(html: string): YouTubeReleasePlaylist[] {
   return playlists
 }
 
-async function getReleaseVideoIds(playlists: YouTubeReleasePlaylist[]): Promise<string[]> {
-  const videoIds: string[] = []
+async function getReleaseVideos(playlists: YouTubeReleasePlaylist[]): Promise<YouTubeReleaseVideo[]> {
+  const releaseVideos: YouTubeReleaseVideo[] = []
 
   for (let index = 0; index < playlists.length; index += 8) {
     const chunk = playlists.slice(index, index + 8)
     const results = await Promise.all(
-      chunk.map(async (playlist) => {
+      chunk.map(async (playlist, chunkIndex) => {
         try {
           const params = new URLSearchParams({
             playlistId: playlist.id,
@@ -205,17 +213,27 @@ async function getReleaseVideoIds(playlists: YouTubeReleasePlaylist[]): Promise<
 
           const data = await response.json()
           return (data.items ?? [])
-            .map((item: any) => item.contentDetails?.videoId)
-            .filter(Boolean)
+            .map((item: any, trackRank: number) => ({
+              id: item.contentDetails?.videoId,
+              releaseTitle: playlist.title,
+              releaseRank: index + chunkIndex,
+              trackRank,
+            }))
+            .filter((item: YouTubeReleaseVideo) => Boolean(item.id))
         } catch {
           return []
         }
       }),
     )
-    videoIds.push(...results.flat())
+    releaseVideos.push(...results.flat())
   }
 
-  return Array.from(new Set(videoIds))
+  const seen = new Set<string>()
+  return releaseVideos.filter((video) => {
+    if (seen.has(video.id)) return false
+    seen.add(video.id)
+    return true
+  })
 }
 
 export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTracks> {
@@ -233,8 +251,10 @@ export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTrac
     const releasePlaylists = getReleasePlaylists(await releasesRes.text())
     if (releasePlaylists.length === 0) return { latest: [], popular: [] }
 
-    const videoIds = await getReleaseVideoIds(releasePlaylists)
-    if (videoIds.length === 0) return { latest: [], popular: [] }
+    const releaseVideos = await getReleaseVideos(releasePlaylists)
+    if (releaseVideos.length === 0) return { latest: [], popular: [] }
+    const videoIds = releaseVideos.map((video) => video.id)
+    const releaseByVideoId = new Map(releaseVideos.map((video) => [video.id, video]))
 
     const videoDetails: any[] = []
     for (let index = 0; index < videoIds.length; index += 50) {
@@ -253,6 +273,7 @@ export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTrac
     const musicVideos = videoDetails
       .map((video: any) => {
         const viewCountValue = Number(video.statistics?.viewCount ?? 0)
+        const release = releaseByVideoId.get(video.id)
         return {
           id: video.id,
           title:
@@ -265,6 +286,9 @@ export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTrac
             ?? video.snippet?.thumbnails?.default?.url
             ?? '',
           publishedAt: video.snippet?.publishedAt ?? '',
+          releaseTitle: release?.releaseTitle ?? '',
+          releaseRank: release?.releaseRank ?? Number.MAX_SAFE_INTEGER,
+          trackRank: release?.trackRank ?? Number.MAX_SAFE_INTEGER,
           viewCount: viewCountValue.toLocaleString('ko-KR'),
           viewCountValue,
           url: `https://www.youtube.com/watch?v=${video.id}`,
@@ -273,14 +297,24 @@ export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTrac
       .filter((video: any) => video.id && video.title && video.publishedAt)
 
     const latest = [...musicVideos]
-      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+      .sort((a, b) => a.releaseRank - b.releaseRank || a.trackRank - b.trackRank)
       .slice(0, limit)
-      .map(({ viewCountValue: _viewCountValue, ...video }) => video)
+      .map(({
+        viewCountValue: _viewCountValue,
+        releaseRank: _releaseRank,
+        trackRank: _trackRank,
+        ...video
+      }) => video)
 
     const popular = [...musicVideos]
       .sort((a, b) => b.viewCountValue - a.viewCountValue)
       .slice(0, limit)
-      .map(({ viewCountValue: _viewCountValue, ...video }) => video)
+      .map(({
+        viewCountValue: _viewCountValue,
+        releaseRank: _releaseRank,
+        trackRank: _trackRank,
+        ...video
+      }) => video)
 
     return { latest, popular }
   } catch {
