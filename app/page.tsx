@@ -53,66 +53,58 @@ export default async function Home() {
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section
         id="home"
-        className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
-        style={{ background: 'var(--bg)' }}
+        className="relative min-h-screen flex flex-col items-center justify-end overflow-hidden bg-[#171111]"
       >
-        {/* 배경 그라데이션 텍스처 */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(ellipse at 15% 15%, rgba(155,79,42,0.10) 0%, transparent 55%), radial-gradient(ellipse at 85% 85%, rgba(155,79,42,0.07) 0%, transparent 55%)',
-          }}
-        />
-
-        {/* public/images/hero/ 에 사진 넣으면 자동으로 배경으로 표시 */}
+        {/* EP <결> 커버를 전체 배경과 상단 리본에 겹쳐 사용 */}
         {heroBg && (
           <>
             <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                backgroundImage: `url('${heroBg}')`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center top',
-              }}
+              className="gyeol-hero-art absolute inset-0 pointer-events-none"
+              style={{ backgroundImage: `url('${heroBg}')` }}
             />
             <div
-              className="absolute inset-0 pointer-events-none"
-              style={{ background: 'rgba(247,242,234,0.72)' }}
+              className="gyeol-hero-ribbon absolute inset-x-0 top-16 h-28 pointer-events-none opacity-90 md:h-36"
+              style={{ backgroundImage: `url('${heroBg}')` }}
             />
           </>
         )}
 
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(75,14,13,0.02) 0%, rgba(20,14,14,0.08) 42%, rgba(15,10,10,0.82) 78%, rgba(10,7,7,0.96) 100%)',
+          }}
+        />
+
         {/* 본문 */}
-        <div className="relative z-10 text-center px-6 py-24">
+        <div className="relative z-10 w-full max-w-6xl px-6 pb-24 pt-52 text-center text-[#f3eee8] md:px-10 md:pb-20">
           <p
-            className="text-[11px] tracking-[0.45em] uppercase mb-10"
-            style={{ color: 'var(--muted)' }}
+            className="mb-5 text-[10px] tracking-[0.45em] uppercase text-[#e0c2bd]"
           >
-            Singer &middot; Songwriter
+            7th EP &middot; GYEOL
           </p>
 
           <h1 className="sr-only">Isaac Hong</h1>
           <img
-            src="/images/logo/isaac-hong-logo-dark.png"
+            src="/images/logo/isaac-hong-logo.png"
             alt=""
-            className="mx-auto mb-12 w-[min(68vw,34rem)]"
+            className="mx-auto mb-8 w-[min(62vw,26rem)] brightness-0 invert"
           />
 
           {/* 공식 채널 */}
           <p
-            className="text-[10px] tracking-[0.32em] uppercase mb-4"
-            style={{ color: 'var(--muted)' }}
+            className="mb-4 text-[9px] tracking-[0.32em] uppercase text-[#c9aaa5]"
           >
             Official Channels
           </p>
-          <div className="flex gap-4 justify-center flex-wrap">
+          <div className="mx-auto flex max-w-md flex-wrap justify-center gap-3 sm:max-w-none sm:gap-4">
             <a
               href="https://www.instagram.com/hongisaac_official/"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase transition-opacity hover:opacity-70"
-              style={{ background: 'var(--text)', color: 'var(--bg)' }}
+              className="basis-[calc(50%-0.375rem)] px-3 py-2.5 text-[10px] tracking-[0.2em] uppercase transition-opacity hover:opacity-70 sm:basis-auto sm:px-7 sm:text-[11px] sm:tracking-[0.25em]"
+              style={{ background: 'var(--gyeol-red)', color: 'var(--gyeol-ivory)' }}
             >
               Instagram
             </a>
@@ -120,8 +112,8 @@ export default async function Home() {
               href="https://youtube.com/@pngisacofficial"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase border transition-all hover:opacity-70"
-              style={{ borderColor: 'var(--text)', color: 'var(--text)' }}
+              className="basis-[calc(50%-0.375rem)] px-3 py-2.5 text-[10px] tracking-[0.2em] uppercase border transition-all hover:opacity-70 sm:basis-auto sm:px-7 sm:text-[11px] sm:tracking-[0.25em]"
+              style={{ borderColor: 'rgba(243,238,232,0.55)', color: 'var(--gyeol-ivory)' }}
             >
               YouTube
             </a>
@@ -129,8 +121,8 @@ export default async function Home() {
               href={YOUTUBE_MUSIC_ARTIST_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase border transition-all hover:opacity-70"
-              style={{ borderColor: 'var(--text)', color: 'var(--text)' }}
+              className="basis-[calc(50%-0.375rem)] px-3 py-2.5 text-[10px] tracking-[0.18em] uppercase border transition-all hover:opacity-70 sm:basis-auto sm:px-7 sm:text-[11px] sm:tracking-[0.25em]"
+              style={{ borderColor: 'rgba(243,238,232,0.55)', color: 'var(--gyeol-ivory)' }}
             >
               YouTube Music
             </a>
@@ -138,8 +130,8 @@ export default async function Home() {
               href={SPOTIFY_ARTIST_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase border transition-all hover:opacity-70"
-              style={{ borderColor: 'var(--text)', color: 'var(--text)' }}
+              className="basis-[calc(50%-0.375rem)] px-3 py-2.5 text-[10px] tracking-[0.2em] uppercase border transition-all hover:opacity-70 sm:basis-auto sm:px-7 sm:text-[11px] sm:tracking-[0.25em]"
+              style={{ borderColor: 'rgba(243,238,232,0.55)', color: 'var(--gyeol-ivory)' }}
             >
               Spotify
             </a>
@@ -147,8 +139,8 @@ export default async function Home() {
               href={MELON_ARTIST_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase border transition-all hover:opacity-70"
-              style={{ borderColor: 'var(--text)', color: 'var(--text)' }}
+              className="basis-[calc(50%-0.375rem)] px-3 py-2.5 text-[10px] tracking-[0.2em] uppercase border transition-all hover:opacity-70 sm:basis-auto sm:px-7 sm:text-[11px] sm:tracking-[0.25em]"
+              style={{ borderColor: 'rgba(243,238,232,0.55)', color: 'var(--gyeol-ivory)' }}
             >
               Melon
             </a>
@@ -157,7 +149,7 @@ export default async function Home() {
           {/* 개인 채널 */}
           <div
             className="mt-5 flex items-center justify-center gap-x-4 gap-y-2 flex-wrap text-[10px] tracking-[0.22em] uppercase"
-            style={{ color: 'var(--muted)' }}
+            style={{ color: '#bfa5a1' }}
           >
             <a
               href="https://youtube.com/@pngisac-video"
@@ -182,7 +174,7 @@ export default async function Home() {
         {/* 스크롤 인디케이터 */}
         <div
           className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-          style={{ color: 'var(--muted)' }}
+          style={{ color: '#d7bbb7' }}
         >
           <div className="w-px h-14 opacity-30" style={{ background: 'var(--muted)' }} />
           <span className="text-[10px] tracking-[0.35em] uppercase opacity-50">Scroll</span>
@@ -194,10 +186,16 @@ export default async function Home() {
 
         {/* 프로필 (public/images/profile/ 에 사진 넣으면 표시) */}
         {profileSrc && (
-          <section className="py-20 flex flex-col md:flex-row gap-12 items-center">
-            <div className="shrink-0 w-56 md:w-72">
-              <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
-                <Image src={profileSrc} alt="홍이삭" fill className="object-cover" />
+          <section className="py-20 grid gap-10 items-center md:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)] md:gap-14">
+            <div className="w-full">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#d8d5cf]">
+                <Image
+                  src={profileSrc}
+                  alt="EP 결 프로필 사진 속 홍이삭"
+                  fill
+                  priority
+                  className="object-cover object-center"
+                />
               </div>
             </div>
             <div>

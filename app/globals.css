@@ -3,17 +3,48 @@
 @tailwind utilities;
 
 :root {
-  --bg: #f7f2ea;
-  --card: #fffdf7;
-  --border: #e5d9c8;
-  --text: #261a0e;
-  --muted: #8a7060;
-  --accent: #9b4f2a;
+  --bg: #eeeae4;
+  --card: #f7f3ed;
+  --border: #d8cbc5;
+  --text: #191414;
+  --muted: #796968;
+  --accent: #8d2825;
+  --gyeol-red: #8d2825;
+  --gyeol-red-deep: #641817;
+  --gyeol-ivory: #f3eee8;
 }
 
 body {
   background-color: var(--bg);
   color: var(--text);
+}
+
+.gyeol-hero-art {
+  background-position: center 20%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: saturate(0.92) contrast(1.04);
+  transform: scale(1.012);
+}
+
+.gyeol-hero-ribbon {
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  mix-blend-mode: multiply;
+}
+
+@media (max-width: 640px) {
+  .gyeol-hero-art {
+    background-color: var(--gyeol-red);
+    background-position: center 5.25rem;
+    background-size: 100% auto;
+    transform: none;
+  }
+
+  .gyeol-hero-ribbon {
+    background-size: 125% auto;
+  }
 }
 
 @layer components {
