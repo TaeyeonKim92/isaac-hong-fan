@@ -3,15 +3,19 @@ import path from 'path'
 import Image from 'next/image'
 import AlbumCarousel from './components/AlbumCarousel'
 import VideoCarousel from './components/VideoCarousel'
-import { getArtistInfo, getTopTracks } from '@/lib/lastfm'
-import { getAlbums, getLatestOriginalAlbumTracks } from '@/lib/itunes'
+import { getArtistInfo } from '@/lib/lastfm'
+import { getAlbums } from '@/lib/itunes'
 import { getInstagramPosts, formatInstagramDate } from '@/lib/instagram'
-import { getLatestVideos } from '@/lib/youtube'
+import { getLatestVideos, getYouTubeMusicTracks } from '@/lib/youtube'
 import { getNewsArticles, formatNewsDate } from '@/lib/news'
 import { getUpcomingPerformances } from '@/lib/kopis'
 import { historyItems } from '@/lib/history'
 
 export const revalidate = 86400
+
+const SPOTIFY_ARTIST_URL = 'https://open.spotify.com/artist/4bST03NJ0YEysocK5AV1wB'
+const MELON_ARTIST_URL = 'https://www.melon.com/artist/timeline.htm?artistId=774246'
+const YOUTUBE_MUSIC_ARTIST_URL = 'https://music.youtube.com/channel/UCsnX5bnTB6NTzzXOguVcqZw'
 
 // public/images/ 폴더에서 이미지 파일 목록 읽기
 const IMG_EXT = /\.(jpg|jpeg|png|webp)$/i
@@ -25,11 +29,10 @@ function readImages(folder: string): string[] {
 }
 
 export default async function Home() {
-  const [artist, tracks, albums, latestTracks, instagramPosts, videos, news, performances] = await Promise.all([
+  const [artist, albums, youtubeMusic, instagramPosts, videos, news, performances] = await Promise.all([
     getArtistInfo(),
-    getTopTracks(),
     getAlbums('홍이삭'),
-    getLatestOriginalAlbumTracks('홍이삭'),
+    getYouTubeMusicTracks(5),
     getInstagramPosts(3),
     getLatestVideos(50),
     getNewsArticles('홍이삭', 6),
@@ -122,7 +125,16 @@ export default async function Home() {
               YouTube
             </a>
             <a
-              href="https://open.spotify.com/search/%ED%99%8D%EC%9D%B4%EC%82%AD/artists"
+              href={YOUTUBE_MUSIC_ARTIST_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase border transition-all hover:opacity-70"
+              style={{ borderColor: 'var(--text)', color: 'var(--text)' }}
+            >
+              YouTube Music
+            </a>
+            <a
+              href={SPOTIFY_ARTIST_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase border transition-all hover:opacity-70"
@@ -131,7 +143,7 @@ export default async function Home() {
               Spotify
             </a>
             <a
-              href="https://www.melon.com/search/total/index.htm?q=%ED%99%8D%EC%9D%B4%EC%82%AD"
+              href={MELON_ARTIST_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="px-7 py-2.5 text-[11px] tracking-[0.25em] uppercase border transition-all hover:opacity-70"
@@ -229,9 +241,18 @@ export default async function Home() {
                   자동 앨범 데이터가 준비되지 않은 동안 Spotify와 Melon으로 연결합니다.
                 </p>
               </div>
-              <div className="mt-5 flex shrink-0 gap-3 sm:mt-0">
+              <div className="mt-5 flex shrink-0 flex-wrap gap-3 sm:mt-0 sm:justify-end">
                 <a
-                  href="https://open.spotify.com/search/%ED%99%8D%EC%9D%B4%EC%82%AD/artists"
+                  href={YOUTUBE_MUSIC_ARTIST_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border px-5 py-2 text-[10px] tracking-[0.2em] uppercase transition-opacity hover:opacity-60"
+                  style={{ borderColor: 'var(--text)', color: 'var(--text)' }}
+                >
+                  YouTube Music
+                </a>
+                <a
+                  href={SPOTIFY_ARTIST_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="border px-5 py-2 text-[10px] tracking-[0.2em] uppercase transition-opacity hover:opacity-60"
@@ -240,7 +261,7 @@ export default async function Home() {
                   Spotify
                 </a>
                 <a
-                  href="https://www.melon.com/search/total/index.htm?q=%ED%99%8D%EC%9D%B4%EC%82%AD"
+                  href={MELON_ARTIST_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="border px-5 py-2 text-[10px] tracking-[0.2em] uppercase transition-opacity hover:opacity-60"
@@ -253,34 +274,28 @@ export default async function Home() {
           )}
         </section>
 
-        {/* 트랙 */}
-        {(tracks.length > 0 || latestTracks.length > 0) && (
-          <section className="py-20 border-t" style={{ borderColor: 'var(--border)' }}>
-            <div
-              className={
-                tracks.length > 0 && latestTracks.length > 0
-                  ? 'grid grid-cols-1 lg:grid-cols-2 gap-14'
-                  : 'max-w-3xl mx-auto'
-              }
-            >
-              {tracks.length > 0 && (
+        {/* YouTube 공식 아티스트 채널 기반 음악 */}
+        {(youtubeMusic.latest.length > 0 || youtubeMusic.popular.length > 0) && (
+          <section id="music" className="scroll-mt-16 py-20 border-t" style={{ borderColor: 'var(--border)' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-14">
+              {youtubeMusic.latest.length > 0 && (
                 <div>
                   <div className="flex items-baseline justify-between gap-4">
-                    <h2 className="section-title">인기 트랙</h2>
+                    <h2 className="section-title">최근 음악</h2>
                     <a
-                      href={artist?.url ?? 'https://www.last.fm/music/Isaac+Hong'}
+                      href={YOUTUBE_MUSIC_ARTIST_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mb-2 shrink-0 text-[10px] tracking-[0.18em] uppercase transition-opacity hover:opacity-60"
                       style={{ color: 'var(--muted)' }}
                     >
-                      View on Last.fm &rarr;
+                      YouTube Music &rarr;
                     </a>
                   </div>
                   <div className="section-line" />
-                  {tracks.map((track, i) => (
+                  {youtubeMusic.latest.map((track, i) => (
                     <a
-                      key={track.name}
+                      key={track.id}
                       href={track.url}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -294,24 +309,33 @@ export default async function Home() {
                         className="flex-1 font-medium group-hover:opacity-60 transition-opacity"
                         style={{ color: 'var(--text)' }}
                       >
-                        {track.name}
+                        {track.title}
                       </p>
                       <span className="text-sm shrink-0" style={{ color: 'var(--muted)' }}>
-                        {track.playcount}
+                        {new Date(track.publishedAt).toLocaleDateString('ko-KR', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
                       </span>
                     </a>
                   ))}
                 </div>
               )}
 
-              {latestTracks.length > 0 && (
+              {youtubeMusic.popular.length > 0 && (
                 <div>
-                  <h2 className="section-title">최신 트랙</h2>
+                  <div className="flex items-baseline justify-between gap-4">
+                    <h2 className="section-title">인기 음악</h2>
+                    <span
+                      className="mb-2 shrink-0 text-[10px] tracking-[0.12em] uppercase"
+                      style={{ color: 'var(--muted)' }}
+                    >
+                      공식 채널 조회수 기준
+                    </span>
+                  </div>
                   <div className="section-line" />
-                  <p className="text-sm mb-3" style={{ color: 'var(--muted)' }}>
-                    {latestTracks[0].albumName}
-                  </p>
-                  {latestTracks.map((track, i) => (
+                  {youtubeMusic.popular.map((track, i) => (
                     <a
                       key={track.id}
                       href={track.url}
@@ -321,16 +345,16 @@ export default async function Home() {
                       style={{ borderColor: 'var(--border)' }}
                     >
                       <span className="text-xs w-4 text-center shrink-0 tabular-nums" style={{ color: 'var(--muted)' }}>
-                        {track.trackNumber || i + 1}
+                        {i + 1}
                       </span>
                       <p
                         className="flex-1 font-medium group-hover:opacity-60 transition-opacity"
                         style={{ color: 'var(--text)' }}
                       >
-                        {track.name}
+                        {track.title}
                       </p>
                       <span className="text-sm shrink-0" style={{ color: 'var(--muted)' }}>
-                        {track.releaseDate.slice(0, 4)}
+                        {track.viewCount}회
                       </span>
                     </a>
                   ))}

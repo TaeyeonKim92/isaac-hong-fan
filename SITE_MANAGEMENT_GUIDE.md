@@ -25,10 +25,10 @@ flowchart TD
     U[방문자] --> V[Vercel CDN]
     V --> P[app/page.tsx<br/>서버 컴포넌트 + ISR 24시간]
     P --> A[Promise.all 병렬 조회]
-    A --> LF[Last.fm<br/>프로필·인기 트랙]
-    A --> IT[iTunes Search<br/>앨범·최신 트랙]
+    A --> LF[Last.fm<br/>프로필 소개]
+    A --> IT[iTunes Search<br/>앨범]
     A --> IG[Instagram Graph API<br/>최근 게시물]
-    A --> YT[YouTube Data API<br/>최근 영상]
+    A --> YT[YouTube Data API<br/>최근 영상·최근 음악·인기 음악]
     A --> GN[Google News RSS<br/>뉴스]
     A --> KP[KOPIS API + 수동 목록<br/>공연 일정]
     P --> FS[public/images 폴더 스캔<br/>히어로·프로필·갤러리]
@@ -68,7 +68,7 @@ lib/
 ├─ instagram.ts                 Instagram Business Discovery 조회
 ├─ itunes.ts                    앨범과 최신 정규/EP 트랙 조회·필터
 ├─ kopis.ts                     공연 검색, 출연진 보조 검색, 예매 링크 보정
-├─ lastfm.ts                    프로필 소개와 인기 트랙 조회
+├─ lastfm.ts                    프로필 소개와 진단용 인기 트랙 함수
 ├─ news.ts                      Google News RSS 파싱
 ├─ spotify.ts                   Spotify 유틸리티; 현재 홈 페이지에서는 미사용
 └─ youtube.ts                   두 YouTube 채널의 최신 업로드 통합
@@ -116,10 +116,10 @@ public/images/
 
 - 콘텐츠 최대 폭은 대부분 `max-w-6xl`이다.
 - 데스크톱 상단 메뉴: Albums / Gallery / History / 중앙 로고 / Tour / News.
-- 앨범 데이터가 비어도 `#albums` 앵커와 섹션을 유지하고 Spotify·Melon 안내 링크를 표시한다.
+- 앨범 데이터가 비어도 `#albums` 앵커와 섹션을 유지하고 YouTube Music·Spotify·Melon 안내 링크를 표시한다.
 - `md` 미만에서는 텍스트 메뉴 전체가 숨고 중앙 로고만 남는다. 모바일 대체 메뉴나 햄버거 버튼은 없다.
 - 앨범: 모바일 2열, 데스크톱 4열, 한 페이지 최대 8개.
-- 인기 트랙과 최신 트랙이 모두 있으면 2열로 표시하고, 한 목록만 있으면 중앙의 단일 컬럼으로 표시한다.
+- 공식 YouTube 음악은 `최근 음악`과 `인기 음악`의 2열로 표시한다.
 - 영상: 모바일 1열, `md` 이상 3열, 한 페이지 최대 6개.
 - Instagram: 모바일 1열, `sm` 2열, `lg` 3열.
 - 갤러리: 2열 → 3열 → 4열.
@@ -128,9 +128,10 @@ public/images/
 ### 상호작용
 
 - 상단 내비게이션은 80px 이상 스크롤하면 반투명 배경, 블러와 하단 선이 생긴다.
-- 히어로의 주 버튼은 공식 Instagram, 공식 YouTube, Spotify, Melon으로 구성한다.
+- 히어로의 주 버튼은 공식 Instagram, 공식 YouTube, YouTube Music, Spotify, Melon으로 구성한다.
+- Spotify와 Melon은 검색 결과가 아닌 홍이삭 아티스트 상세 페이지로 직접 연결한다.
 - Vlog YouTube와 개인 Instagram은 공식 채널과 구분되는 보조 텍스트 링크로 표시한다.
-- Last.fm 링크는 히어로가 아니라 인기 트랙 제목 옆에 표시한다.
+- 음악 항목은 YouTube Music의 해당 곡으로 직접 연결한다.
 - 모든 외부 콘텐츠 링크는 새 탭에서 열린다.
 - 앨범과 영상은 페이지 점과 좌우 화살표로 이동한다.
 - 영상 썸네일은 hover 시 플레이 아이콘 오버레이가 나타난다.
@@ -143,8 +144,7 @@ public/images/
 | 히어로 | `public/images/hero` | `app/page.tsx` | 배포 시 반영 | 배경 사진 교체·추가 |
 | 프로필 | 로컬 이미지 + Last.fm bio | `app/page.tsx`, `lib/lastfm.ts` | bio는 ISR | 프로필 사진 교체, 소개 문구 품질 보정 |
 | 앨범 | iTunes Search API | `lib/itunes.ts` | ISR | 검색 누락, 아티스트명 변경, 필터 오판 |
-| 인기 트랙 | Last.fm | `lib/lastfm.ts` | ISR | API 키 갱신, 잘못된 아티스트 매칭 |
-| 최신 트랙 | iTunes Search API | `lib/itunes.ts` | ISR | 새 앨범이 OST로 잘못 제외되거나 검색되지 않을 때 |
+| 최근·인기 음악 | YouTube Data API v3 | `lib/youtube.ts` | ISR | API 키·할당량 문제, 공식 채널 또는 음악 카테고리 변경 |
 | 갤러리 | `public/images/gallery` | `app/page.tsx` | 배포 시 반영 | 사진 추가·삭제·순서 변경 |
 | Instagram | Instagram Graph API | `lib/instagram.ts` | ISR | 액세스 토큰 만료, 계정명 변경, API 버전 변경 |
 | 최신 영상 | YouTube Data API v3 | `lib/youtube.ts` | ISR | API 키·할당량 문제, 채널 handle 변경 |
@@ -166,7 +166,7 @@ public/images/
 ### Last.fm
 
 - 검색 아티스트는 `Isaac Hong`으로 고정되어 있다.
-- 홈에서 프로필 소개, Last.fm 링크, 인기 트랙 5개를 사용한다.
+- 홈에서는 프로필 소개에만 사용한다. 인기 트랙 자동 목록은 YouTube 공식 데이터로 대체했다.
 - `LASTFM_API_KEY`가 필요하다.
 - 현재 키는 프로덕션에서 동작하지만 `.env.local.example`에는 항목이 빠져 있다.
 
@@ -175,14 +175,16 @@ public/images/
 - API 키가 필요 없다.
 - 검색 결과의 `artistName`이 정확히 `홍이삭`인 앨범만 허용한다.
 - 특정 싱글 3개를 이름으로 제외한다.
-- 최신 트랙에서는 OST 관련 키워드를 제외하고 첫 번째 원본 앨범의 트랙을 가져온다.
-- 2026-11-13 확인 당시 iTunes 검색 결과가 비어 있어 라이브 사이트의 앨범과 최신 트랙 섹션도 표시되지 않았다.
+- 2026-11-13 확인 당시 iTunes 검색 결과가 비어 있어 라이브 사이트는 앨범 대신 공식 음원 플랫폼 안내를 표시한다.
 
 ### YouTube Data API v3
 
 - `@pngisac-video`, `@pngisacofficial` 두 채널의 업로드 재생목록을 합친다.
 - 업로드 날짜순으로 정렬하고 최대 50개를 홈으로 전달한다.
 - 별도 통계 요청으로 조회수를 붙인다.
+- 공식 아티스트 채널의 최근 업로드 50개 중 음악 카테고리 ID `10`만 골라 `최근 음악`과 `인기 음악`을 만든다.
+- `최근 음악`은 공개일순, `인기 음악`은 해당 후보의 조회수순이다. YouTube Music 자체 차트는 아니다.
+- 음악 항목은 `music.youtube.com/watch?v=...`로 연결한다.
 - `YOUTUBE_API_KEY`와 일일 API 할당량이 필요하다.
 
 ### Instagram Graph API
@@ -219,7 +221,7 @@ public/images/
 ### Spotify
 
 - `lib/spotify.ts`와 `/api/test-spotify`는 남아 있지만 홈 페이지는 Spotify 데이터를 사용하지 않는다.
-- 히어로의 Spotify 버튼은 검색 페이지로 연결되는 정적 링크다.
+- 히어로의 Spotify 버튼은 홍이삭 아티스트 상세 페이지로 연결되는 정적 링크다.
 - 현재 프로덕션 `/api/test-spotify` 응답으로 보아 Spotify 환경변수는 설정되지 않았다.
 - 홈 기능에 필요하지 않다면 모듈과 공개 진단 라우트를 제거할 수 있다.
 
@@ -227,7 +229,7 @@ public/images/
 
 | 변수 | 필수도 | 용도 | 미설정 시 |
 |---|---|---|---|
-| `LASTFM_API_KEY` | 현재 화면상 중요 | 프로필·인기 트랙 | 프로필 bio/Last.fm 버튼/인기 트랙이 사라짐 |
+| `LASTFM_API_KEY` | 프로필 사용 시 필요 | 프로필 소개 | 프로필 bio가 사라짐 |
 | `YOUTUBE_API_KEY` | 중요 | 최신 영상 | 영상 섹션이 사라짐 |
 | `KOPIS_API_KEY` | 선택 | 자동 공연 검색 | 수동 공연만 표시 |
 | `KOPIS_CAST_SCAN_PAGES` | 선택 | 출연진 보조 검색 범위 | 기본 2페이지 |
@@ -339,7 +341,7 @@ public/images/
 ### 노출 중
 
 - 히어로와 플랫폼 링크
-- Last.fm 인기 트랙
+- YouTube 공식 채널 기반 최근 음악·인기 음악
 - YouTube 최신 영상
 - 주요 활동과 단독 공연 타임라인
 - KOPIS 공연 일정
@@ -348,7 +350,7 @@ public/images/
 ### 미노출
 
 - 프로필: `public/images/profile`에 실제 이미지 없음
-- 앨범과 최신 트랙: iTunes 검색 결과가 비어 있음
+- 앨범: iTunes 검색 결과가 비어 있어 공식 음원 플랫폼 안내를 표시
 - 갤러리: `public/images/gallery`에 실제 이미지 없음
 - Instagram: 데이터가 비었거나 환경변수/토큰 조건을 충족하지 못한 상태로 추정
 

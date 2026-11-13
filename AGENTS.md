@@ -39,3 +39,12 @@ npm run build
 - 운영 설명: `SITE_MANAGEMENT_GUIDE.md`
 
 공연 데이터 구조나 검증 규칙을 바꾸면 위 파일과 운영 문서를 함께 수정한다.
+
+## 음악 데이터 규칙
+
+- YouTube Music 웹 화면이나 비공개 내부 API를 파싱하지 않는다.
+- 최근 음악과 인기 음악은 기존 `YOUTUBE_API_KEY`를 사용하는 공식 YouTube Data API v3로 조회한다.
+- `@pngisacofficial` 공식 아티스트 채널의 업로드 중 YouTube 음악 카테고리 ID `10`만 사용한다.
+- `최근 음악`은 공개일순, `인기 음악`은 조회수순으로 계산한다.
+- 조회수 기반 목록을 YouTube Music 공식 차트라고 표현하지 않는다. 화면에는 `공식 채널 조회수 기준`을 명시한다.
+- 곡 링크는 `https://music.youtube.com/watch?v=VIDEO_ID` 형식으로 연결한다.
