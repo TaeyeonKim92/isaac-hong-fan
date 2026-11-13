@@ -222,7 +222,13 @@ export default async function Home() {
         {/* 트랙 */}
         {(tracks.length > 0 || latestTracks.length > 0) && (
           <section className="py-20 border-t" style={{ borderColor: 'var(--border)' }}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-14">
+            <div
+              className={
+                tracks.length > 0 && latestTracks.length > 0
+                  ? 'grid grid-cols-1 lg:grid-cols-2 gap-14'
+                  : 'max-w-3xl mx-auto'
+              }
+            >
               {tracks.length > 0 && (
                 <div>
                   <div className="flex items-baseline justify-between gap-4">
