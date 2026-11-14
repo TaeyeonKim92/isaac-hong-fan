@@ -41,6 +41,18 @@ function dateKey(date: Date) {
   return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
 }
 
+function koreaTodayKey() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date())
+
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]))
+  return `${values.year}.${values.month}.${values.day}`
+}
+
 function formatLongDate(value: string) {
   return new Intl.DateTimeFormat('ko-KR', {
     month: 'long',
@@ -86,13 +98,10 @@ function EventLink({ event, compact = false }: { event: ScheduleEvent; compact?:
 }
 
 export default function ScheduleCalendar({ events }: { events: ScheduleEvent[] }) {
-  const today = new Date()
-  const currentMonthEvent = events.find((event) => {
-    const date = parseDate(event.date)
-    return date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth()
-  })
+  const todayKey = koreaTodayKey()
+  const today = parseDate(todayKey)
   const [monthCursor, setMonthCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
-  const [selectedDate, setSelectedDate] = useState(currentMonthEvent?.date || dateKey(today))
+  const [selectedDate, setSelectedDate] = useState(todayKey)
 
   const eventsByDate = useMemo(() => {
     const grouped = new Map<string, ScheduleEvent[]>()
@@ -120,6 +129,11 @@ export default function ScheduleCalendar({ events }: { events: ScheduleEvent[] }
   function moveMonth(offset: number) {
     const nextMonth = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + offset, 1)
     setMonthCursor(nextMonth)
+
+    if (nextMonth.getFullYear() === today.getFullYear() && nextMonth.getMonth() === today.getMonth()) {
+      setSelectedDate(todayKey)
+      return
+    }
 
     const firstEvent = events.find((event) => {
       const date = parseDate(event.date)
