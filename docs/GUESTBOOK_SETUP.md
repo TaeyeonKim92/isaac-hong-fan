@@ -53,3 +53,6 @@ SCHEDULE_WEBHOOK_SECRET=Apps_Script의_WEBHOOK_SECRET과_같은_값
 - 방문자 네트워크 식별자는 Vercel에서 HMAC으로 변환한 뒤 1분 등록 제한에만 사용하고 시트에는 저장하지 않는다.
 - 같은 닉네임과 메시지 조합은 중복 등록하지 않는다.
 - 공개 응답에는 `published` 행만 포함하며 내부 해시와 관리자 메모는 반환하지 않는다.
+
+
+> Vercel 환경 변수를 변경한 뒤에는 Production 재배포가 필요하다.
