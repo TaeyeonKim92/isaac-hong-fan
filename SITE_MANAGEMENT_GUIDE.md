@@ -14,7 +14,7 @@
 - 스타일: Tailwind CSS 3 + CSS 커스텀 속성
 - 호스팅: Vercel
 - 기본 브랜치: `main`
-- 페이지 구성: 단일 홈 페이지 + 진단용 API 라우트 2개
+- 페이지 구성: 단일 홈 페이지 + 방명록 API + 진단용 API 라우트 2개
 - 갱신 방식: ISR(Incremental Static Regeneration), `revalidate = 86400`으로 최대 24시간 단위 재생성
 - 핵심 특징: 외부 데이터 소스에 장애가 나도 전체 페이지를 실패시키지 않고 해당 섹션만 숨김
 
@@ -151,6 +151,7 @@ public/images/
 | Instagram | Instagram Graph API | `lib/instagram.ts` | ISR | 액세스 토큰 만료, 계정명 변경, API 버전 변경 |
 | 최신 영상 | YouTube Data API v3 | `lib/youtube.ts` | ISR | API 키·할당량 문제, 채널 handle 변경 |
 | 공식 일정 | 승인 일정 JSON + 공연 회차 | `data/schedule.json`, `data/performances.json`, `lib/schedule.ts` | 배포 시 반영 | 공식 Instagram 일정 승인, 공연 추가·변경·취소 |
+| 방명록 | Google Sheet `방명록` 탭 | `app/components/Guestbook.tsx`, `app/api/guestbook/route.ts` | 요청 시 즉시 | 숨김 처리, 스팸 점검 |
 | 뉴스 | Google News RSS | `lib/news.ts` | ISR | 검색 품질 저하, HTML 엔티티 노출, 무관 기사 증가 |
 
 ### 로컬 이미지 규칙
@@ -264,6 +265,8 @@ public/images/
 | `INSTAGRAM_GRAPH_API_VERSION` | 선택 | Graph API 버전 | 기본 `v23.0` |
 | `SPOTIFY_CLIENT_ID` | 홈에는 불필요 | 미사용 Spotify 모듈·진단 API | 진단 API가 환경변수 없음 응답 |
 | `SPOTIFY_CLIENT_SECRET` | 홈에는 불필요 | 미사용 Spotify 모듈·진단 API | 진단 API가 환경변수 없음 응답 |
+| `GOOGLE_APPS_SCRIPT_WEBHOOK_URL` | 방명록 사용 시 필요 | 방명록 Google Sheet 읽기·쓰기 | 방명록 로드·등록 실패 |
+| `SCHEDULE_WEBHOOK_SECRET` | 방명록 사용 시 필요 | Vercel과 Apps Script 사이 인증·방문자 키 HMAC | 방명록 로드·등록 실패 |
 
 운영 원칙:
 
