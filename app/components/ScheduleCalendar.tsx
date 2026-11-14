@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import type { ScheduleCategory, ScheduleEvent } from '@/lib/schedule'
 
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일']
@@ -80,20 +81,18 @@ function EventLink({ event, compact = false }: { event: ScheduleEvent; compact?:
       {!compact && event.description && (
         <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--muted)' }}>{event.description}</p>
       )}
-      {event.url && !compact && (
+      {!compact && (
         <span className="mt-4 inline-flex items-center text-[10px] font-semibold tracking-[0.18em] uppercase" style={{ color: 'var(--accent)' }}>
-          {event.linkLabel || '자세히 보기'} <span className="ml-1.5" aria-hidden="true">→</span>
+          일정 상세 보기 <span className="ml-1.5" aria-hidden="true">→</span>
         </span>
       )}
     </>
   )
 
-  if (!event.url) return <div>{content}</div>
-
   return (
-    <a href={event.url} target="_blank" rel="noopener noreferrer" className="block transition-opacity hover:opacity-65">
+    <Link href={`/schedule/${encodeURIComponent(event.id)}`} className="block transition-opacity hover:opacity-65">
       {content}
-    </a>
+    </Link>
   )
 }
 
