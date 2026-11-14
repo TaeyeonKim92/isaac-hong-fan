@@ -4,6 +4,10 @@ const HEADERS = [
   'sourceMediaId', 'confidence', 'verifiedAt', 'lastCheckedAt', 'notes'
 ]
 
+const GUESTBOOK_HEADERS = [
+  'id', 'createdAt', 'nickname', 'message', 'status', 'contentHash', 'adminNote'
+]
+
 const NOTION_SOURCE = {
   pageId: '2dc189fb-8bc4-807b-8f99-cc9c9faef8c5',
   collectionId: '2dc189fb-8bc4-8068-8899-000b43bbb545',
@@ -37,6 +41,14 @@ function scheduleConfig() {
   }
 }
 
+function guestbookConfig() {
+  const properties = PropertiesService.getScriptProperties()
+  return {
+    spreadsheetId: properties.getProperty('SPREADSHEET_ID') || '',
+    sheetName: properties.getProperty('GUESTBOOK_SHEET_NAME') || '방명록'
+  }
+}
+
 function jsonResponse(body, status) {
   return ContentService
     .createTextOutput(JSON.stringify(body))
@@ -55,13 +67,17 @@ function doPost(e) {
     const body = JSON.parse(e.postData && e.postData.contents ? e.postData.contents : '{}')
     const properties = PropertiesService.getScriptProperties()
     const expectedSecret = properties.getProperty('WEBHOOK_SECRET')
-    const config = scheduleConfig()
-    const spreadsheetId = config.spreadsheetId
-    const sheetName = config.sheetName
 
     if (!expectedSecret || body.secret !== expectedSecret) {
       return jsonResponse({ ok: false, error: 'unauthorized' })
     }
+
+    if (body.action === 'guestbook:list') return listGuestbookEntries()
+    if (body.action === 'guestbook:create') return createGuestbookEntry(body)
+
+    const config = scheduleConfig()
+    const spreadsheetId = config.spreadsheetId
+    const sheetName = config.sheetName
     if (!spreadsheetId) return jsonResponse({ ok: false, error: 'missing spreadsheet id' })
 
     const event = body.event || {}
@@ -103,6 +119,90 @@ function doPost(e) {
   } finally {
     lock.releaseLock()
   }
+}
+
+function assertHeaders(sheet, expectedHeaders) {
+  const headers = sheet.getRange(1, 1, 1, expectedHeaders.length).getDisplayValues()[0]
+  if (expectedHeaders.some((header, index) => headers[index] !== header)) {
+    throw new Error('header mismatch')
+  }
+}
+
+function guestbookSheet() {
+  const config = guestbookConfig()
+  if (!config.spreadsheetId) throw new Error('missing spreadsheet id')
+  const sheet = SpreadsheetApp.openById(config.spreadsheetId).getSheetByName(config.sheetName)
+  if (!sheet) throw new Error('guestbook sheet not found')
+  assertHeaders(sheet, GUESTBOOK_HEADERS)
+  return sheet
+}
+
+function sha256Hex(value) {
+  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(value), Utilities.Charset.UTF_8)
+    .map((byte) => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, '0'))
+    .join('')
+}
+
+function normalizeGuestbookText(value) {
+  return String(value || '')
+    .replace(/\r\n?/g, '\n')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+    .trim()
+}
+
+function listGuestbookEntries() {
+  const sheet = guestbookSheet()
+  const lastRow = sheet.getLastRow()
+  if (lastRow < 2) return jsonResponse({ ok: true, entries: [] })
+
+  const values = sheet.getRange(2, 1, lastRow - 1, GUESTBOOK_HEADERS.length).getDisplayValues()
+  const entries = values
+    .filter((row) => row[4] === 'published')
+    .slice(-50)
+    .reverse()
+    .map((row) => ({ id: row[0], createdAt: row[1], nickname: row[2], message: row[3] }))
+
+  return jsonResponse({ ok: true, entries: entries })
+}
+
+function createGuestbookEntry(body) {
+  const entry = body.entry || {}
+  const nickname = normalizeGuestbookText(entry.nickname)
+  const message = normalizeGuestbookText(entry.message)
+  const visitorKey = normalizeGuestbookText(body.visitorKey)
+
+  if (!nickname || nickname.length > 30 || !message || message.length > 500) {
+    return jsonResponse({ ok: false, error: 'invalid guestbook entry' })
+  }
+  if (/(?:https?:\/\/|www\.|[a-z0-9-]+\.(?:com|net|org|kr|io)(?:\/|\b))/i.test(message)) {
+    return jsonResponse({ ok: false, error: 'links are not allowed' })
+  }
+
+  const cache = CacheService.getScriptCache()
+  const rateKey = visitorKey ? `guestbook-rate-${visitorKey}` : ''
+  if (rateKey && cache.get(rateKey)) return jsonResponse({ ok: true, rateLimited: true })
+
+  const sheet = guestbookSheet()
+  const contentHash = sha256Hex(`${nickname}\n${message}`)
+  const lastRow = sheet.getLastRow()
+  if (lastRow >= 2) {
+    const startRow = Math.max(2, lastRow - 499)
+    const hashes = sheet.getRange(startRow, 6, lastRow - startRow + 1, 1).getDisplayValues()
+    if (hashes.some((row) => row[0] === contentHash)) {
+      return jsonResponse({ ok: true, duplicate: true })
+    }
+  }
+
+  const createdAt = Utilities.formatDate(new Date(), 'Asia/Seoul', "yyyy-MM-dd'T'HH:mm:ssXXX")
+  const id = `guest-${Date.now()}-${Utilities.getUuid().slice(0, 8)}`
+  sheet.appendRow([id, createdAt, nickname, message, 'published', contentHash, ''])
+  SpreadsheetApp.flush()
+  if (rateKey) cache.put(rateKey, '1', 60)
+
+  return jsonResponse({
+    ok: true,
+    entry: { id: id, createdAt: createdAt, nickname: nickname, message: message }
+  })
 }
 
 function parseCalendarTitle(title) {
