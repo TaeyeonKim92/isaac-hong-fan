@@ -80,7 +80,7 @@ export default async function Home() {
             7th EP &middot; GYEOL
           </p>
 
-          <h1 className="sr-only">Isaac Hong</h1>
+          <h1 className="sr-only">홍이삭 (Isaac Hong)</h1>
           <img
             src="/images/logo/isaac-hong-logo.png"
             alt=""
