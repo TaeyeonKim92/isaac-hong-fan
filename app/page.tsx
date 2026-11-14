@@ -4,6 +4,7 @@ import Image from 'next/image'
 import AlbumCarousel from './components/AlbumCarousel'
 import VideoCarousel from './components/VideoCarousel'
 import ScheduleCalendar from './components/ScheduleCalendar'
+import Guestbook from './components/Guestbook'
 import { getInstagramPosts, formatInstagramDate } from '@/lib/instagram'
 import { getLatestVideos, getYouTubeMusicTracks } from '@/lib/youtube'
 import { getNewsArticles, formatNewsDate } from '@/lib/news'
@@ -426,6 +427,10 @@ export default async function Home() {
 
       <div className="max-w-6xl mx-auto px-6 md:px-10">
         <ScheduleCalendar events={scheduleEvents} />
+      </div>
+
+      <div className="max-w-6xl mx-auto px-6 md:px-10">
+        <Guestbook />
       </div>
 
       {/* ── 뉴스 ─────────────────────────────────────────────────── */}
