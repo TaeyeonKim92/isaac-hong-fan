@@ -1,4 +1,5 @@
 import publishedSchedule from '@/data/schedule.json'
+import curatedPerformances from '@/data/performances.json'
 import type { KopisPerformance } from '@/lib/kopis'
 
 export type ScheduleCategory = '공연' | '방송' | '라디오' | '발매' | '팬이벤트' | '티켓오픈' | '기타'
@@ -9,6 +10,8 @@ export interface ScheduleEvent {
   title: string
   date: string
   time?: string
+  endDate?: string
+  endTime?: string
   venue?: string
   description?: string
   url?: string
@@ -23,6 +26,7 @@ interface PublishedScheduleItem {
   startDate: string
   startTime?: string
   endDate: string
+  endTime?: string
   venue?: string
   description?: string
   url?: string
@@ -44,6 +48,7 @@ function performanceEvents(performance: KopisPerformance): ScheduleEvent[] {
     title: performance.title,
     date: normalizeDate(show.date),
     time: show.time,
+    endDate: normalizeDate(show.date),
     venue: performance.venue,
     description: performance.schedule?.length
       ? `전체 ${performance.schedule.length}회 중 ${index + 1}회`
@@ -53,8 +58,12 @@ function performanceEvents(performance: KopisPerformance): ScheduleEvent[] {
   }))
 }
 
-export function getScheduleEvents(performances: KopisPerformance[]): ScheduleEvent[] {
-  const approvedEvents = (publishedSchedule as PublishedScheduleItem[])
+function sortEvents(events: ScheduleEvent[]) {
+  return events.sort((a, b) => `${a.date} ${a.time || ''}`.localeCompare(`${b.date} ${b.time || ''}`))
+}
+
+export function getPublishedScheduleEvents(): ScheduleEvent[] {
+  return (publishedSchedule as PublishedScheduleItem[])
     .filter((event) => event.status === 'approved')
     .map((event) => ({
       id: event.id,
@@ -62,12 +71,33 @@ export function getScheduleEvents(performances: KopisPerformance[]): ScheduleEve
       title: event.title,
       date: normalizeDate(event.startDate),
       time: event.startTime,
+      endDate: normalizeDate(event.endDate),
+      endTime: event.endTime,
       venue: event.venue,
       description: event.description,
       url: event.url,
       linkLabel: event.linkLabel,
     }))
+}
 
-  return [...approvedEvents, ...performances.flatMap(performanceEvents)]
-    .sort((a, b) => `${a.date} ${a.time || ''}`.localeCompare(`${b.date} ${b.time || ''}`))
+export function getStaticScheduleEvents(): ScheduleEvent[] {
+  const performances = curatedPerformances.map((performance) => ({
+    ...performance,
+    detailUrl: performance.bookingUrl || performance.sourceUrl,
+  })) as KopisPerformance[]
+
+  return sortEvents([
+    ...getPublishedScheduleEvents(),
+    ...performances.flatMap(performanceEvents),
+  ])
+}
+
+export function getScheduleEventById(id: string): ScheduleEvent | undefined {
+  return getStaticScheduleEvents().find((event) => event.id === id)
+}
+
+export function getScheduleEvents(performances: KopisPerformance[]): ScheduleEvent[] {
+  const approvedEvents = getPublishedScheduleEvents()
+
+  return sortEvents([...approvedEvents, ...performances.flatMap(performanceEvents)])
 }
