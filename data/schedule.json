@@ -493,6 +493,30 @@
     "linkLabel": "공식 일정 보기"
   },
   {
+    "id": "mnet-6af73f5d83a9e81d0430cb44",
+    "status": "approved",
+    "category": "라디오",
+    "title": "Arirang Radio - Radio’n Us",
+    "startDate": "2026.11.19",
+    "startTime": "20:00",
+    "endDate": "2026.11.19",
+    "url": "https://artist.mnetplus.world/main/stg/isaachong/schedule/2026/11?eventId=6af73f5d83a9e81d0430cb44",
+    "linkLabel": "공식 일정 보기"
+  },
+  {
+    "id": "manual-20261120-muve-dive-into-music",
+    "status": "approved",
+    "category": "방송",
+    "title": "[MUVE] DIVE INTO MUSIC – 홍이삭",
+    "startDate": "2026.11.20",
+    "startTime": "18:00",
+    "endDate": "2026.11.20",
+    "venue": "MUVE 유튜브",
+    "description": "새 EP [결]과 타이틀곡 ‘그때 우리’ 관련 영상 공개.",
+    "url": "https://www.instagram.com/magazine_muve/",
+    "linkLabel": "공식 일정 보기"
+  },
+  {
     "id": "mnet-6ae828e65ba3d32fb9cca98e",
     "status": "approved",
     "category": "공연",
@@ -512,6 +536,19 @@
     "endDate": "2026.11.29",
     "description": "홍이삭 참석 예정",
     "url": "https://www.instagram.com/andamirofilms",
+    "linkLabel": "공식 일정 보기"
+  },
+  {
+    "id": "manual-20261203-never-give-up",
+    "status": "approved",
+    "category": "공연",
+    "title": "마약 예방 문화 콘서트 〈안녕: 나의 소중한 일상〉",
+    "startDate": "2026.12.03",
+    "startTime": "19:30",
+    "endDate": "2026.12.03",
+    "endTime": "21:30",
+    "venue": "사랑의교회 본당",
+    "description": "NEVER GIVE UP 마약 예방 문화 콘서트. 무료입장. 출연: 송하예, 범키, 수퍼비, 홍이삭.",
     "linkLabel": "공식 일정 보기"
   }
 ]
