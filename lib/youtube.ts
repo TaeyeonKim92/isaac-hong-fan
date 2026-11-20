@@ -134,6 +134,7 @@ interface YouTubeReleasePlaylist {
 
 interface YouTubeReleaseVideo {
   id: string
+  releaseId: string
   releaseTitle: string
   releaseRank: number
   trackRank: number
@@ -254,6 +255,7 @@ async function getReleaseVideos(playlists: YouTubeReleasePlaylist[]): Promise<Yo
           return (data.items ?? [])
             .map((item: any, trackRank: number) => ({
               id: item.contentDetails?.videoId,
+              releaseId: playlist.id,
               releaseTitle: playlist.title,
               releaseRank: index + chunkIndex,
               trackRank,
@@ -288,7 +290,7 @@ export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTrac
     const releasePlaylists = getReleasePlaylists(await releasesRes.text())
     if (releasePlaylists.length === 0) return { releases: [], latest: [], popular: [] }
 
-    const releases = releasePlaylists.map((playlist) => ({
+    const fallbackReleases = releasePlaylists.map((playlist) => ({
       id: playlist.id,
       name: playlist.title,
       artistName: playlist.artistName,
@@ -298,10 +300,33 @@ export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTrac
       url: `https://www.youtube.com/playlist?list=${playlist.id}`,
     }))
 
-    if (!API_KEY) return { releases, latest: [], popular: [] }
+    if (!API_KEY) return { releases: fallbackReleases, latest: [], popular: [] }
 
     const releaseVideos = await getReleaseVideos(releasePlaylists)
-    if (releaseVideos.length === 0) return { releases, latest: [], popular: [] }
+    if (releaseVideos.length === 0) return { releases: fallbackReleases, latest: [], popular: [] }
+
+    const firstVideoByReleaseId = new Map<string, string>()
+    releaseVideos.forEach((video) => {
+      if (!firstVideoByReleaseId.has(video.releaseId)) {
+        firstVideoByReleaseId.set(video.releaseId, video.id)
+      }
+    })
+
+    const releases = releasePlaylists.map((playlist) => {
+      const firstVideoId = firstVideoByReleaseId.get(playlist.id)
+      return {
+        id: playlist.id,
+        name: playlist.title,
+        artistName: playlist.artistName,
+        trackCount: playlist.trackCount,
+        artworkUrl: firstVideoId
+          ? `https://i.ytimg.com/vi/${firstVideoId}/hqdefault.jpg`
+          : playlist.thumbnailUrl,
+        backdropColor: playlist.backdropColor,
+        url: `https://www.youtube.com/playlist?list=${playlist.id}`,
+      }
+    })
+
     const videoIds = releaseVideos.map((video) => video.id)
     const releaseByVideoId = new Map(releaseVideos.map((video) => [video.id, video]))
 
