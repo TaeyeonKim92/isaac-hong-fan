@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import Image from 'next/image'
 import type { YouTubeReleaseAlbum } from '@/lib/youtube'
 
 const PER_PAGE = 6
@@ -30,12 +29,12 @@ export default function AlbumCarousel({ albums }: { albums: YouTubeReleaseAlbum[
               style={{ background: album.backdropColor }}
             >
               {album.artworkUrl ? (
-                <Image
+                <img
                   src={album.artworkUrl}
                   alt={album.name}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-contain group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  className="absolute inset-0 h-full w-full object-contain group-hover:scale-105 transition-transform duration-500"
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-4xl">🎵</div>
@@ -64,7 +63,7 @@ export default function AlbumCarousel({ albums }: { albums: YouTubeReleaseAlbum[
               <button
                 key={i}
                 onClick={() => setPage(i)}
-                aria-label={`${i + 1}번째 발매 목록 페이지`}
+                aria-label={(i + 1) + '번째 발매 목록 페이지'}
                 className="rounded-full transition-all duration-200"
                 style={{
                   width: i === page ? '20px' : '6px',
