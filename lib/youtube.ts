@@ -3,6 +3,7 @@ import musicTitleOverrides from '@/data/music-title-overrides.json'
 const API_KEY = process.env.YOUTUBE_API_KEY!
 const YOUTUBE_CHANNEL_HANDLES = ['@pngisac-video', '@pngisacofficial']
 const YOUTUBE_RELEASES_URL = 'https://www.youtube.com/@pngisacofficial/releases?hl=ko&gl=KR'
+const YOUTUBE_REVALIDATE_SECONDS = 3600
 
 export interface YouTubeChannel {
   title: string
@@ -30,7 +31,10 @@ async function fetchConfiguredChannels(): Promise<ChannelResource[]> {
           forHandle: handle,
           key: API_KEY,
         })
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?${params}`)
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?${params}`, {
+          next: { revalidate: YOUTUBE_REVALIDATE_SECONDS },
+        })
+        if (!res.ok) return null
         const data = await res.json()
         const ch = data.items?.[0]
         if (!ch) return null
@@ -248,7 +252,9 @@ async function getReleaseVideos(playlists: YouTubeReleasePlaylist[]): Promise<Yo
             maxResults: '50',
             key: API_KEY,
           })
-          const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?${params}`)
+          const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?${params}`, {
+            next: { revalidate: YOUTUBE_REVALIDATE_SECONDS },
+          })
           if (!response.ok) return []
 
           const data = await response.json()
@@ -280,6 +286,7 @@ async function getReleaseVideos(playlists: YouTubeReleasePlaylist[]): Promise<Yo
 export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTracks> {
   try {
     const releasesRes = await fetch(YOUTUBE_RELEASES_URL, {
+      next: { revalidate: YOUTUBE_REVALIDATE_SECONDS },
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; IsaacHongFan/1.0)',
         'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
@@ -338,7 +345,9 @@ export async function getYouTubeMusicTracks(limit = 5): Promise<YouTubeMusicTrac
         hl: 'ko',
         key: API_KEY,
       })
-      const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?${params}`)
+      const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?${params}`, {
+        next: { revalidate: YOUTUBE_REVALIDATE_SECONDS },
+      })
       if (!response.ok) continue
       const data = await response.json()
       videoDetails.push(...(data.items ?? []))
@@ -409,7 +418,10 @@ export async function getLatestVideos(maxResults = 6): Promise<YouTubeVideo[]> {
           maxResults: String(maxResults),
           key: API_KEY,
         })
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?${params}`)
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?${params}`, {
+          next: { revalidate: YOUTUBE_REVALIDATE_SECONDS },
+        })
+        if (!res.ok) return []
         const data = await res.json()
         return (data.items ?? []).map((item: any) => ({
           id: item.contentDetails?.videoId,
@@ -432,9 +444,10 @@ export async function getLatestVideos(maxResults = 6): Promise<YouTubeVideo[]> {
 
     const videoIds = items.map((item) => item.id).join(',')
     const statsRes = await fetch(
-      `https://www.googleapis.com/youtube/v3/videos?id=${videoIds}&part=statistics&key=${API_KEY}`
+      `https://www.googleapis.com/youtube/v3/videos?id=${videoIds}&part=statistics&key=${API_KEY}`,
+      { next: { revalidate: YOUTUBE_REVALIDATE_SECONDS } },
     )
-    const statsData = await statsRes.json()
+    const statsData = statsRes.ok ? await statsRes.json() : { items: [] }
     const statsMap: Record<string, string> = {}
     for (const v of statsData.items ?? []) {
       statsMap[v.id] = Number(v.statistics.viewCount).toLocaleString('ko-KR')
