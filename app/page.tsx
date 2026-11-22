@@ -11,7 +11,8 @@ import { getNewsArticles, formatNewsDate } from '@/lib/news'
 import { getUpcomingPerformances } from '@/lib/kopis'
 import { getScheduleEvents } from '@/lib/schedule'
 
-export const revalidate = 86400
+// Keep the homepage fresh enough to surface newly uploaded YouTube videos.
+export const revalidate = 3600
 
 const SPOTIFY_ARTIST_URL = 'https://open.spotify.com/artist/4bST03NJ0YEysocK5AV1wB'
 const MELON_ARTIST_URL = 'https://www.melon.com/artist/timeline.htm?artistId=774246'
